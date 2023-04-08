@@ -18,7 +18,7 @@ def logtcp(dir, byte_data):
 
 
 def client_login():
-    pass
+    print("")
 
 
 stop_flag = False

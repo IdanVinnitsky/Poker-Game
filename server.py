@@ -6,7 +6,7 @@ from table import Table
 from deck import Deck
 from game import Game
 from gamemsg import Data
-
+import time
 
 def logtcp(dir, byte_data):
     """
@@ -16,7 +16,17 @@ def logtcp(dir, byte_data):
     if dir == 'sent':
         print(f'C LOG:Sent     >>>{byte_data}')
     else:
-        print(f'C LOG:Recieved <<<{byte_data}')
+        print(f'C LOG:Received <<<{byte_data}')
+
+
+stop_flag = False
+
+
+def print_every_5_seconds(string):
+    global stop_flag
+    while not stop_flag:
+        print(string)
+        time.sleep(5)
 
 
 def handle_client(sock, tid, addr, game):
@@ -30,6 +40,16 @@ def handle_client(sock, tid, addr, game):
     game.add_player(curr_palyer)
 
     sock.send(pickle.dumps(gameMsg))
+
+    # Start a new thread to run the print_every_5_seconds function with a message as parameter
+    msg = ""
+    thread1 = threading.Thread(target=print_every_5_seconds, args=(msg,))
+    thread1.daemon = True  # Set daemon flag so the thread exits when the main program exits
+    thread1.start()
+
+    thread2 = threading.Thread(target=print_every_5_seconds, args=(msg,))
+    thread2.daemon = True  # Set daemon flag so the thread exits when the main program exits
+    thread2.start()
 
     while True:
         try:
@@ -48,15 +68,14 @@ def handle_client(sock, tid, addr, game):
                     status = "Waiting for players....."
                     game.update_status(status)
                 elif num_of_p > 1:
+                    status = "player/s joined"
+                    game.update_status(status)
+                    #for player in players:
+                    #    player.get_cards(deck)
 
-                    for player in players:
-                        player.get_cards(deck)
-
-                    deck.flop_cards()
-                    flop = deck.get_flop()
-
-                logtcp("receive", data)
-                logtcp("sent", gameMsg)
+                time.sleep(4)
+                thread1._args = (logtcp("receive", data),)
+                thread2._args = (logtcp("sent", gameMsg),)
 
             sock.sendall(pickle.dumps(gameMsg))
         except Exception as e:

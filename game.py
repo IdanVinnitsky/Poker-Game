@@ -13,12 +13,25 @@ class Game:
         self.status = ""
         self.in_round = False
 
+    def set_table(self, table):
+        self.table = table
+
+    def set_deck(self, deck):
+        self.deck = deck
+
+
+    def get_table(self):
+        return self.table
+
     def update_players(self):
         for player in self.players:
             if player not in self.players_in_the_round:
                 self.players_in_the_round.append(player)
 
-    def game_in_round(self):
+    def get_players_in_the_round(self):
+        return self.players_in_the_round
+
+    def get_in_round(self):
         return self.in_round
 
     def start_the_round(self):

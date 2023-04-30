@@ -17,23 +17,43 @@ def logtcp(dir, byte_data):
         print(f'C LOG:Received <<<{byte_data}')
 
 
-def client_login():
-    print("")
+def making_request_2():
+    print('''
+    It's your turn.
+    You have 3 options:
+    1. Call
+    2. call & Raise
+    3.Pass
+    ''')
+    num = input("Enter a number between 1-3: ")
+    if num == 1:
+        return "CALL"
+    if num == 2:
+        money = input("How much?")
+        return "CANR" + str(money)
+    if num == 3:
+        return "PASS"
 
 
-stop_flag = False
-
-
-def print_every_5_seconds(string):
-    global stop_flag
-    while not stop_flag:
-        print(string)
-        time.sleep(5)
-
+def making_request_1():
+    print('''
+    It's your turn.
+    What would you like to do?
+    1. Chek
+    2. Raise
+    3. Pass                                    
+    ''')
+    num = int(input("Enter a number between 1-3: "))  # to Liya
+    if num == 1:
+        return "CHEK"
+    if num == 2:
+        money = input("How much?")
+        return "RAIS" + str(money)
+    if num == 3:
+        return "PASS"
 
 def main(ip):
     n = Network(ip)
-    # window = Tk()
 
     if n is None:
         print("ERR~4~ The network is empty , there is no network")
@@ -42,29 +62,49 @@ def main(ip):
     sock = n.get_client()
     gameMsg = n.getP()
     game = gameMsg.getGame()
+    player = gameMsg.getPlayer()
 
-    # Start a new thread to run the print_every_5_seconds function with a message as parameter
-    msg = ""
-    thread = threading.Thread(target=print_every_5_seconds, args=(msg,))
-    thread.daemon = True  # Set daemon flag so the thread exits when the main program exits
-    thread.start()
+
+    first1 = True
+    first2 = True
 
     while True:
+        game = gameMsg.getGame()
+        player = gameMsg.getPlayer()
+
         num_of_p = game.get_num_of_p()
         status = game.get_status()
 
-        if num_of_p == 1:
-            new_msg = status
-            thread._args = (new_msg,)  # Set the new message as the argument for the thread
-        elif num_of_p > 1:
-            new_msg = status
-            thread._args = (new_msg,)
+        logtcp("receive", status)
 
+        in_the_round = game.get_in_round()
+        logtcp("receive", str("in_the_round ") + str(in_the_round))
+        table = game.get_table()
+
+        while in_the_round:
+
+            logtcp("receive", str("player.get_is_turn() ") + str(player.get_is_turn()))
+            if player.get_is_turn():
+                data = ""
+                logtcp("receive", str("get_money_in_the_pot ") + str(table.get_money_in_the_pot()))
+                if table.get_money_in_the_pot():
+                    data = making_request_2()
+                else:
+                    data = making_request_1()
+                #time.sleep(5)
+
+                try:
+                    n.send(data)
+                    gameMsg = n.receive()
+                except Exception as e:
+                    print(e)
+            else:
+                time.sleep(3)
 
 
         try:
-            game = gameMsg.getGame()
-            gameMsg = n.send(gameMsg)
+            n.send(gameMsg)
+            gameMsg = n.receive()
         except Exception as e:
             print(e)
 

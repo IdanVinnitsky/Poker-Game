@@ -9,3 +9,10 @@ class Data:
 
     def getPlayer(self):
         return self.player
+
+    def setGame(self, game):
+        self.game = game
+
+    def setPlayer(self, player):
+        self.player = player
+

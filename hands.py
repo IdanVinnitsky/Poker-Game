@@ -15,6 +15,7 @@ class HandRank(Enum):
     ROYAL_FLUSH = auto()
 
 
+
 class Hand:
     def __init__(self, name):
         self.__name = name
@@ -226,7 +227,7 @@ class Hand:
 
         return self.__get_highest_card(self.__hand)
 
-'''
+
 from card import *
 
 values = list(CardRank)
@@ -245,6 +246,25 @@ hand1 = [card1, card2, card3, card4, card5, card6, card7]
 hand.receive_cards(hand1)
 ret = hand.getHighestRank()
 
+hand1 = HandRank.FOUR
+some_hand_rank = HandRank.FULL_HOUSE
+
+# Compare two HandRank values
+if HandRank.THREE > HandRank.PAIR:
+    print("Three of a kind beats a pair")
+
+# Use a HandRank value in a conditional statement
+if some_hand_rank == HandRank.FULL_HOUSE:
+    print("You have a full house!")
+
+# Convert an integer value back to a HandRank value
+hand_rank_value = 3
+hand_rank = HandRank(hand_rank_value)
+print(hand_rank == HandRank.THREE)  # prints True
+
+
+
+print()
 print(ret[0])
 print(ret[1])
-'''
+

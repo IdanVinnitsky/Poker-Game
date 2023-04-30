@@ -8,6 +8,14 @@ from game import Game
 from gamemsg import Data
 import time
 
+BUFFER_SIZE = 4096
+
+table = Table(1)
+deck = Deck()
+game = Game(1, table, deck)
+
+
+
 def logtcp(dir, byte_data):
     """
     log direction and all TCP byte array data
@@ -19,41 +27,162 @@ def logtcp(dir, byte_data):
         print(f'C LOG:Received <<<{byte_data}')
 
 
-stop_flag = False
+def handle_request(request, player, table):
+    req = request[0:4]
+    money = request[4:]
+
+    if req == "CHEK":
+        return "OK", "CHEK"
+
+    if req == "RAIS":
+        player.sub_money(money)
+        table.add_to_jackpot(money)
+        table.update_money_in_the_pot()
+        table.set_money_to_call(money)
+        return "OK", "RAIS"
+
+    if req == "CALL":
+        to_call = table.money_to_call()
+        player.sub_money(to_call)
+        table.add_to_jackpot(to_call)
+        return "OK", "CALL"
+
+    if req == "CANR":
+        to_call = table.money_to_call()
+        player.sub_money(to_call)
+        player.sub_money(money)
+        return "OK", "CANR"
+
+    if req == "PASS":
+        return "OK", "PASS"
+
+    return "", ""
 
 
-def print_every_5_seconds(string):
-    global stop_flag
-    while not stop_flag:
-        print(string)
-        time.sleep(5)
+
+before_the_round = True
+threadLock = threading.Lock()
+clients = []
+counter = 0
+end_round = True
 
 
-def handle_client(sock, tid, addr, game):
+def in_the_round(gameMsg, game, my_sock, player, tid):
+    global threadLock
+    global before_the_round
+    global clients
+    global BUFFER_SIZE
+    global counter
+    global end_round
+
+    game.update_players()
+
+    deck = game.get_deck()
+    table = game.get_table()
+
+    game.start_the_round()
+
+    threadLock.acquire()
+
+    if before_the_round:
+
+        for player in game.get_players_in_the_round():
+            player.get_cards(deck)
+
+        deck.first_flop()
+
+        flop = deck.get_flop()
+
+        print(flop)
+        before_the_round = False
+
+    # Free lock to release next thread
+    threadLock.release()
+
+    flop = deck.get_flop()
+
+    while len(deck.get_flop()) < 5:
+
+        while counter < len(game.get_players_in_the_round()):
+
+            if clients[counter][0] == my_sock:
+                player.set_is_turn(True)
+                request = ""
+                answer = ("", "")
+                while request == "" and answer[0] != "OK":
+                    try:
+                        my_sock.send(pickle.dumps(gameMsg))
+                        # Receive data from client
+                        request = pickle.loads(my_sock.recv(BUFFER_SIZE))
+                        print(request)
+                        answer = handle_request(request, player, table)
+
+
+                    except Exception as e:
+                        print(e)
+                        break
+
+                player.set_is_turn(False)
+                threadLock.acquire()
+                counter += 1
+                print(str(counter) + "   tid:" + str(tid))
+                threadLock.release()
+
+
+            else:
+                #print("its not your turn")
+                time.sleep(5)
+
+        threadLock.acquire()
+        end_round = True
+        if end_round:
+            card = deck.get_card()
+            flop.append(card)
+            print ("len flop " + str(len(flop)))
+            counter = 0
+            print(str(counter) + " ipus  tid:" + str(tid))
+            end_round = False
+            deck.set_flop(flop)
+            table.new_round()
+            game.set_deck(deck)
+            game.set_table(table)
+            gameMsg.setGame(game)
+            gameMsg.setPlayer(player)
+        # Free lock to release next thread
+        threadLock.release()
+
+        time.sleep(2)
+
+    print(flop)
+
+
+
+
+
+def handle_client(sock, tid, addr):
+    global BUFFER_SIZE
+    global game
+    global threadLock
+    global clients
+
     print(f'New Client number {tid} from {addr}')
+    player = Player("name"+str(tid))
 
-    gameMsg = Data(game, tid)
+    clients.append((sock, player))
 
-    game = gameMsg.getGame()
-    curr_palyer = gameMsg.getPlayer()
+    gameMsg = Data(game, player)
 
-    game.add_player(curr_palyer)
+    game.add_player(player)
 
     sock.send(pickle.dumps(gameMsg))
 
-    # Start a new thread to run the print_every_5_seconds function with a message as parameter
-    msg = ""
-    thread1 = threading.Thread(target=print_every_5_seconds, args=(msg,))
-    thread1.daemon = True  # Set daemon flag so the thread exits when the main program exits
-    thread1.start()
-
-    thread2 = threading.Thread(target=print_every_5_seconds, args=(msg,))
-    thread2.daemon = True  # Set daemon flag so the thread exits when the main program exits
-    thread2.start()
+    first1 = True
+    first2 = True
 
     while True:
         try:
-            data = pickle.loads(sock.recv(2048))
+            # Receive data from client
+            data = pickle.loads(sock.recv(BUFFER_SIZE))
 
             if not data:
                 print("Disconnected")
@@ -65,19 +194,25 @@ def handle_client(sock, tid, addr, game):
                 deck = game.get_deck()
 
                 if num_of_p == 1:
+
                     status = "Waiting for players....."
                     game.update_status(status)
+
                 elif num_of_p > 1:
+
                     status = "player/s joined"
                     game.update_status(status)
-                    #for player in players:
-                    #    player.get_cards(deck)
+                    time.sleep(2)
 
-                time.sleep(4)
-                thread1._args = (logtcp("receive", data),)
-                thread2._args = (logtcp("sent", gameMsg),)
+                    in_the_round(gameMsg, game, sock, player, tid)
+
+
+                #logtcp("receive", data)
+                #logtcp("sent", gameMsg)
 
             sock.sendall(pickle.dumps(gameMsg))
+
+
         except Exception as e:
             print(e)
             break
@@ -103,15 +238,17 @@ def main():
 
     srv_sock.listen()
     print("Waiting for a connection, Server Started")
-    table = Table(1)
-    deck = Deck()
-    game = Game(1, table, deck)
+
 
     i = 1
     while True:
         print('\nMain thread: before accepting ...')
-        cli_sock, addr = srv_sock.accept()
-        t = threading.Thread(target=handle_client, args=(cli_sock, str(i), addr, game))
+        try:
+            cli_sock, addr = srv_sock.accept()
+        except Exception as e:
+            print(e)
+
+        t = threading.Thread(target=handle_client, args=(cli_sock, str(i), addr))
         t.start()
         i += 1
         threads.append(t)

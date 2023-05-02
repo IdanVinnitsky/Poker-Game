@@ -131,7 +131,7 @@ def in_the_round(gameMsg, game, my_sock, player, tid):
 
             else:
                 #print("its not your turn")
-                time.sleep(5)
+                time.sleep(2)
 
         threadLock.acquire()
         end_round = True

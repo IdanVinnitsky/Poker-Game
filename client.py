@@ -83,9 +83,12 @@ def main(ip):
 
         while in_the_round:
 
+            player = gameMsg.getPlayer()
+            data = ""
+
             logtcp("receive", str("player.get_is_turn() ") + str(player.get_is_turn()))
             if player.get_is_turn():
-                data = ""
+
                 logtcp("receive", str("get_money_in_the_pot ") + str(table.get_money_in_the_pot()))
                 if table.get_money_in_the_pot():
                     data = making_request_2()
@@ -95,11 +98,16 @@ def main(ip):
 
                 try:
                     n.send(data)
-                    gameMsg = n.receive()
                 except Exception as e:
                     print(e)
+
             else:
-                time.sleep(3)
+                time.sleep(1)
+
+            try:
+                gameMsg = n.receive()
+            except Exception as e:
+                print(e)
 
 
         try:

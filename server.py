@@ -251,7 +251,7 @@ def main():
         t = threading.Thread(target=handle_client, args=(cli_sock, str(i), addr))
         t.start()
         i += 1
-        threads.append(t)
+        threads.append(t)ƒ
 
         if i > 100000000:
             print('\nMain thread: going down for maintenance')

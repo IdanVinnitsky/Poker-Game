@@ -2,13 +2,16 @@ from deck import Deck
 
 
 class Player:
-    def __init__(self, name):
+    def __init__(self, name, id):
         self.name = name
         self.money = 6942
         self.is_turn = False
         #self.title = title
         self.cards = None
         self.playing = False
+        self.id = id
+        self.password = 'NONE'
+        self.response = ''
 
     def get_is_turn(self):
         return self.is_turn

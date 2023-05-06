@@ -1,3 +1,4 @@
+from deck import Deck
 
 
 class Game:
@@ -16,7 +17,7 @@ class Game:
     def set_table(self, table):
         self.table = table
 
-    def set_deck(self, deck):
+    def set_deck(self, deck: Deck):
         self.deck = deck
 
 
@@ -62,4 +63,4 @@ class Game:
         return self.players.append(player)
 
     def start_game(self):
-        pass
+        self.started = True

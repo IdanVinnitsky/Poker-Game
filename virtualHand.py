@@ -36,7 +36,7 @@ class VHand:
             player = gameMsg.getPlayer()
             print("Receive player:" + str(player.id))
             player.password = 'CLIENT' + str(player.id)
-            self.send(gameMsg);
+            self.send(gameMsg)
             print("Waiting for starting game" + str(player.id))
             gameMsg = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
             game = gameMsg.getGame()
@@ -47,6 +47,11 @@ class VHand:
                 game = gameMsg.getGame()
                 print("Round num:" + str(game.round))
                 print("My cards:" + str(gameMsg.getPlayer().cards))
+                othersAnswer = ""
+                for pl in game.get_players():
+                    if pl.id != gameMsg.getPlayer().id:
+                        othersAnswer += "Player " + str(pl.id) + " says " + pl.response + " ;"
+                print("Other Players:" + othersAnswer)
                 res = self.printGameMenu()
                 player = gameMsg.getPlayer()
                 player.response = res

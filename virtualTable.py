@@ -1,6 +1,8 @@
 import pickle
 import socket
 import threading
+
+
 from player import Player
 from table import Table
 from deck import Deck
@@ -102,7 +104,7 @@ class VTable:
                     print("Waiting for Response : HAND=" + str(i))
                     data = pickle.loads(sock.recv(self.BUFFER_SIZE))
                     if data.getPlayer().firstBid == True:
-                        table.money_in_the_pot += data.getPlayer()
+                        self.table.money_in_the_pot += data.getPlayer().bid
                     print("player.response:" + data.getPlayer().response)
                     if len(data.getPlayer().response) > 0:
                         break

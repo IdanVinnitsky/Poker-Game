@@ -9,7 +9,7 @@ class Data:
     def getGame(self):
         return self.game
 
-    def getPlayer(self):
+    def getPlayer(self) -> Player:
         return self.player
 
     def setGame(self, game):

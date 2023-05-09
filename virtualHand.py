@@ -46,6 +46,7 @@ class VHand:
                 gameMsg = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
                 game = gameMsg.getGame()
                 print("Round num:" + str(game.round))
+                print("My cards:" + str(gameMsg.getPlayer().cards))
                 res = self.printGameMenu()
                 player = gameMsg.getPlayer()
                 player.response = res
@@ -98,8 +99,10 @@ class VHand:
             else:
                 print("Invalid command")
 
-
+    def printMenu1(self):
+        print("Menu Options: conn , ")
+        self.initHand()
 
 if __name__ == '__main__':
     vtab = VHand("127.0.0.1")
-    vtab.printMenu()
+    vtab.printMenu1()

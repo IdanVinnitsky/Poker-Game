@@ -1,8 +1,10 @@
+from player import Player
+
 
 class Data:
     def __init__(self, game, player):
         self.game = game
-        self.player = player
+        self.player: Player = player
 
     def getGame(self):
         return self.game

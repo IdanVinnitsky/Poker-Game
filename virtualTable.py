@@ -78,23 +78,35 @@ class VTable:
     def start_game(self):
         print("START start_game")
         self.game.start_game()
+
         gameMsg:Data = Data(self.game, None)
 
-        for key, sock in self.handSocks.items():
+        # for key, sock in self.handSocks.items():
+        #     sock.send(pickle.dumps(gameMsg))
+
+        for player in self.game.get_players():
+            for i in range(2):
+                player.get_cards(self.game.deck)
+            sock = self.handSocks[str(player.id)]
             sock.send(pickle.dumps(gameMsg))
 
-        for i in range(1, len(self.handSocks)+1):
-            print("player:" + str(i))
-            sock = self.handSocks[str(i)]
-            player = Player("name" + str(i), i)
-            gameMsg.setPlayer(player)
-            sock.send(pickle.dumps(gameMsg))
-            while True:
-                print("Waiting for Response : HAND=" + str(i))
-                data = pickle.loads(sock.recv(self.BUFFER_SIZE))
-                print("player.response:" + data.getPlayer().response)
-                if len(data.getPlayer().response) > 0:
-                    break
+        # 3 cards; +1; +1
+        for i in range(3):
+            # for i in range(1, len(self.handSocks)+1): #get playera
+            for player in self.game.get_players():
+                print("player:" + str(i))
+                sock = self.handSocks[str(player.id)]
+                gameMsg.setPlayer(player)
+                sock.send(pickle.dumps(gameMsg))
+                while True:
+                    print("Waiting for Response : HAND=" + str(i))
+                    data = pickle.loads(sock.recv(self.BUFFER_SIZE))
+                    if data.getPlayer().firstBid == True:
+                        table.money_in_the_pot += data.getPlayer()
+                    print("player.response:" + data.getPlayer().response)
+                    if len(data.getPlayer().response) > 0:
+                        break
+
         # Send ALl START Game
 
 

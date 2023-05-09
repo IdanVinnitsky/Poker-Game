@@ -1,4 +1,5 @@
 from deck import Deck
+from player import Player
 
 
 class Game:
@@ -7,7 +8,7 @@ class Game:
         self.table = table
         self.deck = deck
         self.round = 0
-        self.players = []
+        self.players: dict[str, Player] = {}
         self.players_in_the_round = []
         self.started = False
         self.ended = False
@@ -54,13 +55,14 @@ class Game:
         return self.id
 
     def get_players(self):
-        return self.players
+        return list(self.players.values())
 
     def get_num_of_p(self):
         return len(self.players)
 
-    def add_player(self, player):
-        return self.players.append(player)
+    def add_player(self, player: Player):
+        self.players[str(player.id)] = player
 
     def start_game(self):
         self.started = True
+        self.deck.shuffle()

@@ -9,9 +9,11 @@ class Player:
         #self.title = title
         self.cards = None
         self.playing = False
-        self.id = id
+        self.id: str = id
         self.password = 'NONE'
         self.response = ''
+        self.firstBid = True
+        self.bid = 0
 
     def get_is_turn(self):
         return self.is_turn

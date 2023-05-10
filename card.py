@@ -46,3 +46,6 @@ class Card:
 
     def __lt__(self, card2):
         return self.__value.value < card2.getValue().value
+
+    def __hash__(self):
+        return hash((self.__value, self.__suit))

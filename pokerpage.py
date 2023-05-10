@@ -1,53 +1,65 @@
 import tkinter as tk
+import os
+from card import *
+
+def create_card_dict():
+    folder_path = 'cards'
+    file_list = os.listdir(folder_path)
+
+    cards = []
+    values = list(CardRank)
+    suits = list(Suit)  # ♠ ♣ ♥ ♦
+    for value in values:
+        for suit in suits:
+            card = Card(value, suit)
+            cards.append(card)
+
+    dictionary = {}
+
+    for i in range(52):
+        dictionary[cards[i]] = file_list[i]
+
+    return dictionary
 
 
-class PokerPage(tk.Frame):
-    def __init__(self, master=None):
-        super().__init__(master)
-        self.master = master
-        self.pack()
-        self.create_widgets()
-        self.screen()
+class Page(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        self.parent = parent
 
-    def create_widgets(self):
-        # Create a canvas for the table
-        self.table_canvas = tk.Canvas(self, width=800, height=600, bg="green")
-        self.table_canvas.pack(side="top", pady=20)
+        self.image_dict = create_card_dict()
 
-        # Create the players
-        self.player1_canvas = tk.Canvas(self.table_canvas, width=100, height=100, bg="white")
-        self.player1_canvas.place(x=50, y=300)
+        # create a canvas widget for the background image
+        self.canvas = tk.Canvas(self, width=900, height=500)
+        self.canvas.pack(fill="both", expand=True)
 
-        self.player2_canvas = tk.Canvas(self.table_canvas, width=100, height=100, bg="white")
-        self.player2_canvas.place(x=150, y=200)
+        # create a photo object from the image file and display it on the canvas
+        try:
+            self.photo = tk.PhotoImage(file="assets\\pokerscreen.png")
+        except tk.TclError as e:
+            print("Error loading image:", str(e))
+            self.photo = None
 
-        self.player3_canvas = tk.Canvas(self.table_canvas, width=100, height=100, bg="white")
-        self.player3_canvas.place(x=250, y=100)
+        if self.photo is not None:
+            self.canvas.create_image(0, 0, image=self.photo, anchor="nw")
 
-        self.player4_canvas = tk.Canvas(self.table_canvas, width=100, height=100, bg="white")
-        self.player4_canvas.place(x=450, y=100)
+        '''
+        # get the card images from the image_dict and resize them
+        card1_img = tk.PhotoImage(file="cards/" + self.image_dict[Card(CardRank.ACE, Suit.SPADES)]).subsample(3)
+        card2_img = tk.PhotoImage(file="cards/" + self.image_dict[Card(CardRank.KING, Suit.HEARTS)]).subsample(3)
 
-        self.player5_canvas = tk.Canvas(self.table_canvas, width=100, height=100, bg="white")
-        self.player5_canvas.place(x=550, y=200)
+        # place the card images on the canvas at specified coordinates and size
+        self.canvas.create_image(440, 360, image=card1_img, anchor="nw")
+        self.canvas.create_image(460, 360, image=card2_img, anchor="nw", tags="card2")'''
 
-        self.player6_canvas = tk.Canvas(self.table_canvas, width=100, height=100, bg="white")
-        self.player6_canvas.place(x=650, y=300)
-
-        # Create the flop
-        self.flop_canvas = tk.Canvas(self.table_canvas, width=200, height=100, bg="blue")
-        self.flop_canvas.place(x=300, y=250)
-
-    def screen(self):
-        self.master.rowconfigure(0, weight=1)
-        self.master.columnconfigure(0, weight=1)
-        height = 650
-        width = 1240
-        x = (self.master.winfo_screenwidth() // 2) - (width // 2)
-        y = (self.master.winfo_screenheight() // 2) - (height // 4)
-        self.master.geometry('{}x{}+{}+{}'.format(width, height, x, y))
-        self.master.title('Poker Game')
+    def show(self):
+        self.lift()
 
 
 root = tk.Tk()
-poker_page = PokerPage(master=root)
-poker_page.mainloop()
+root.geometry("900x500")
+
+page = Page(root)
+page.pack(fill="both", expand=True)
+
+root.mainloop()

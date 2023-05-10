@@ -4,7 +4,6 @@ import sqlite3
 
 import tkinter as tk
 
-
 def screen(window:Tk):
     window.rowconfigure(0, weight=1)
     window.columnconfigure(0, weight=1)
@@ -17,22 +16,7 @@ def screen(window:Tk):
     window.title('Account System')
 
 
-def show_frame(frame):
-    frame.tkraise()
-
-
-class Page:
-    def __init__(self, window:Tk):
-        screen(window)
-
-        self.sign_in = Frame(window)
-        self.sign_up = Frame(window)
-
-        for frame in (self.sign_in, self.sign_up):
-            frame.grid(row=0, column=0, sticky='nsew')
-
-
-class SignPage(Page):
+class SignPage(tk.Frame):
     def __init__(self, window:Tk):
         super().__init__(window)
         self.FirstName = StringVar()
@@ -48,12 +32,12 @@ class SignPage(Page):
 
 
     def create_widgets(self):
-        self.sign_up.configure(bg="#525561")
+        self.configure(bg="#525561")
 
         # ================Background Image ====================
         backgroundImage = PhotoImage(file="assets\\image_1.png")
         bg_image = Label(
-            self.sign_up,
+            self,
             image=backgroundImage,
             bg="#525561"
         )
@@ -90,7 +74,7 @@ class SignPage(Page):
             cursor="hand2",
             activebackground="#272A37",
             activeforeground="#ffffff",
-            command=lambda: show_frame(self.sign_in)
+            command=lambda: show_frame(LogPage(account_system))
         )
 
         switchLogin.place(x=230, y=185, width=50, height=35)
@@ -317,14 +301,14 @@ class SignPage(Page):
             relief="flat",
             activebackground="#272A37",
             cursor="hand2",
-            command= lambda : signup()
+            command=signup()
         )
         submit_button.place(x=130, y=460, width=333, height=65)
 
         # ==============================================================
 
 
-class LogPage(Page):
+class LogPage(tk.Frame):
     def __init__(self, window):
         super().__init__(window)
         self.email = StringVar()
@@ -333,13 +317,13 @@ class LogPage(Page):
         self.create_widgets()
 
     def create_widgets(self):
-        self.sign_in.configure(bg="#525561")
+        self.configure(bg="#525561")
 
         # ================Background Image ====================
         Login_backgroundImage = PhotoImage(file="assets\\image_1.png")
         # Login_backgroundImage = PhotoImage(file="assets\\background - Copy.png")
         bg_imageLogin = Label(
-            self.sign_in,
+            self,
             image=Login_backgroundImage,
             bg="#525561"
         )
@@ -376,7 +360,7 @@ class LogPage(Page):
             cursor="hand2",
             activebackground="#272A37",
             activeforeground="#ffffff",
-            command=lambda: show_frame(self.sign_up)
+            command=lambda: show_frame(SignPage(account_system))
         )
         switchSignup.place(x=220, y=185, width=70, height=35)
 
@@ -571,10 +555,9 @@ class LogPage(Page):
                         exit_window()
 
 
-
 if __name__ == "__main__":
     root = tk.Tk()
-    root.geometry("900x500")
+    root.geometry("500x500")
     sign_page = SignPage(root)
     sign_page.show()
     root.mainloop()

@@ -31,6 +31,11 @@ class Deck():
         card = self.cards.pop()
         return card
 
+    def print_some(self):
+        card = self.cards.pop()
+        print(card.getValue())
+        print(card.getSuit())
+
     def add_to_flop(self):
         card = self.get_card()
         self.flop.append(card)
@@ -41,3 +46,6 @@ class Deck():
             self.flop.append(card)
 
 
+deck = Deck()
+
+deck.print_some()

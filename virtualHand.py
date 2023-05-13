@@ -17,6 +17,8 @@ class VHand:
         self.port = 5555
         self.addr = (self.server, self.port)
         self.BUFFER_SIZE = 4096
+        self.player = None
+
 
     def connect(self):
         try:
@@ -33,13 +35,13 @@ class VHand:
     def initHand(self):
         try:
             self.client_sock.connect(self.addr)
-            gameMsg =  pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
+            gameMsg = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
             game = gameMsg.getGame()
-            player = gameMsg.getPlayer()
-            print("Receive player:" + str(player.id))
-            player.password = 'CLIENT' + str(player.id)
+            self.player = gameMsg.getPlayer()
+            print("Receive player:" + str(self.player.id))
+            self.player.password = 'CLIENT' + str(self.player.id)
             self.send(gameMsg)
-            print("Waiting for starting game" + str(player.id))
+            print("Waiting for starting game" + str(self.player.id))
             gameMsg = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
             game = gameMsg.getGame()
             print("Game started" + str(game.started))
@@ -49,7 +51,7 @@ class VHand:
                 game = gameMsg.getGame()
                 print("Round num:" + str(game.round))
                 print("My cards:" + str(gameMsg.getPlayer().cards))
-                print("Flop cards:" + str(gameMsg.getGame().get_deck().get_flop()))
+                print("Flop cards:" + str(gameMsg.getGame().get_flop()))
                 othersAnswer = ""
                 for pl in game.get_players():
                     if pl.id != gameMsg.getPlayer().id:

@@ -20,9 +20,8 @@ class VTable:
         self.age = age
         self.handNum: int = 1
         self.handSocks: dict[str, socket] = {}
-        self.table = Table(1)
-        self.deck = Deck()
-        self.game = Game(1, self.table, self.deck)
+        deck = Deck()
+        self.game = Game(1, deck)
         self.BUFFER_SIZE = 4096
 
 
@@ -99,16 +98,13 @@ class VTable:
                 print("Round 1")
             elif i == 1:
                 print("Round 2")
-                self.game.get_deck().first_flop()
+                self.game.first_flop()
             elif i == 2:
                 print("Round 2")
-                self.game.get_deck().first_flop()
+                self.game.add_to_flop()
             elif i == 3:
                 print("Round 3")
-                self.game.get_deck().add_to_flop()
-            elif i == 4:
-                print("Round 3")
-                self.game.get_deck().add_to_flop()
+                self.game.add_to_flop()
             else:
                 raise NotImplementedError(f"Range ", i)
 
@@ -127,7 +123,7 @@ class VTable:
                     print("Waiting for Response : HAND " + str(str(player.id)))
                     data = pickle.loads(sock.recv(self.BUFFER_SIZE))
                     if data.getPlayer().firstBid == True:
-                        self.table.money_in_the_pot += data.getPlayer().bid
+                        self.game.jackpot += data.getPlayer().bid
 
                     print("player.response:" , data.getPlayer().responseAct)
                     if data.getPlayer().responseAct != None:

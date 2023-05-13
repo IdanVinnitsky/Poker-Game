@@ -5,3 +5,4 @@ class HandAct(Enum):
     CALL = 'call'
     CHECK = 'check'
     RAISE = 'raise'
+    FOLD = 'fold'

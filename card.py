@@ -2,10 +2,10 @@ from enum import Enum, auto, unique
 
 
 class Suit(Enum):
-    HEARTS = "♥"
-    DIAMONDS = "♦"
-    CLUBS = "♣"
-    SPADES = "♠"
+    HEARTS = "HEARTS"
+    DIAMONDS = "DIAMONDS"
+    CLUBS = "CLUBS"
+    SPADES = "SPADES"
 
 
 class CardRank(Enum):

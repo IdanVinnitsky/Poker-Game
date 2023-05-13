@@ -3,8 +3,8 @@ from deck import Deck
 
 
 class Player:
-    def __init__(self, name, id):
-        self.name = name
+    def __init__(self, id):
+        self.name = None
         self.money = 6942
         self.is_turn = False
         #self.title = title
@@ -12,7 +12,7 @@ class Player:
         self.playing = False
         self.id: str = id
         self.password = 'NONE'
-        self.responseAct: HandAct = None
+        self.responseAct: HandAct = HandAct.NO_DEF
         self.firstBid = True
         self.bid = 0
 
@@ -22,7 +22,13 @@ class Player:
     def set_is_turn(self, bool):
         self.is_turn = bool
 
-    def get_cards(self, deck):
+    def get_cards(self):
+        return self.cards
+
+    def set_cards(self, card1, card2):
+        self.cards = (card1, card2)
+
+    def generate_cards(self, deck):
         card1 = deck.get_card()
         card2 = deck.get_card()
         self.cards = (card1, card2)

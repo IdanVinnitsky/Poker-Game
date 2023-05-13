@@ -1,3 +1,4 @@
+from GameStatus import GameStatus
 from HandAct import HandAct
 from deck import Deck
 from player import Player
@@ -12,9 +13,9 @@ class Game:
         self.players_in_the_round = []
         self.started = False
         self.ended = False
-        self.status = ""
+        self.status: GameStatus = GameStatus.NO_DEF
         self.in_round = False
-        self.round_status: HandAct = None
+        self.round_status: HandAct = HandAct.NO_DEF
         self.flop = []
         self.jackpot = 0
 
@@ -68,8 +69,11 @@ class Game:
         self.players[str(player.id)] = player
 
     def start_game(self):
-        self.started = True
+        self.status = True
         self.deck.shuffle()
+
+    def init_game(self):
+        self.status = GameStatus.INIT
 
     def set_flop(self, flop):
         self.flop = flop

@@ -2,6 +2,8 @@
 import pickle
 import socket
 import threading
+
+from HandAct import HandAct
 from player import Player
 from table import Table
 from deck import Deck
@@ -47,14 +49,15 @@ class VHand:
                 game = gameMsg.getGame()
                 print("Round num:" + str(game.round))
                 print("My cards:" + str(gameMsg.getPlayer().cards))
+                print("Flop cards:" + str(gameMsg.getGame().get_deck().get_flop()))
                 othersAnswer = ""
                 for pl in game.get_players():
                     if pl.id != gameMsg.getPlayer().id:
-                        othersAnswer += "Player " + str(pl.id) + " says " + pl.response + " ;"
+                        othersAnswer += "Player " + str(pl.id) + " says " + str(pl.responseAct) + " ;"
                 print("Other Players:" + othersAnswer)
                 res = self.printGameMenu()
                 player = gameMsg.getPlayer()
-                player.response = res
+                player.responseAct = res
                 self.send(gameMsg)
         except Exception as e:
             print(e)
@@ -65,7 +68,7 @@ class VHand:
             # Get user input
             user_input = input("Enter a command: ")
             print("User input:" + user_input)
-            return user_input
+            return HandAct(user_input)
             # # Define dictionary of commands
             # commands = {
             #     "help": lambda: print("This is the help message"),

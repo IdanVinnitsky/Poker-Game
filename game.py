@@ -1,3 +1,4 @@
+from HandAct import HandAct
 from deck import Deck
 from player import Player
 
@@ -14,6 +15,8 @@ class Game:
         self.ended = False
         self.status = ""
         self.in_round = False
+        self.round_status: HandAct = ""
+
 
     def set_table(self, table):
         self.table = table

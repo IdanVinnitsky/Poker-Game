@@ -1,3 +1,4 @@
+from HandAct import HandAct
 from deck import Deck
 
 
@@ -11,7 +12,7 @@ class Player:
         self.playing = False
         self.id: str = id
         self.password = 'NONE'
-        self.response = ''
+        self.responseAct: HandAct = None
         self.firstBid = True
         self.bid = 0
 
@@ -43,3 +44,9 @@ class Player:
 
     def get_title(self):
         return self.title
+
+    def __hash__(self):
+        return hash(self.id)
+
+    def __eq__(self, other):
+        return self.id == other.id

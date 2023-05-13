@@ -1,8 +1,9 @@
 import pickle
 import socket
 import threading
+from typing import List
 
-
+from HandAct import HandAct
 from player import Player
 from table import Table
 from deck import Deck
@@ -93,21 +94,50 @@ class VTable:
             sock.send(pickle.dumps(gameMsg))
 
         # 3 cards; +1; +1
-        for i in range(3):
+        for i in range(4):
+            if i == 0:
+                print("Round 1")
+            elif i == 1:
+                print("Round 2")
+                self.game.get_deck().first_flop()
+            elif i == 2:
+                print("Round 2")
+                self.game.get_deck().first_flop()
+            elif i == 3:
+                print("Round 3")
+                self.game.get_deck().add_to_flop()
+            elif i == 4:
+                print("Round 3")
+                self.game.get_deck().add_to_flop()
+            else:
+                raise NotImplementedError(f"Range ", i)
+
             # for i in range(1, len(self.handSocks)+1): #get playera
-            for player in self.game.get_players():
-                print("player:" + str(i))
+            index: int = 0
+            players: List[Player] = self.game.get_players().copy()
+            # for player in players:
+            while index < len(players):
+                player = players[index]
+                index += 1
+                print("player:" + str(player.id))
                 sock = self.handSocks[str(player.id)]
                 gameMsg.setPlayer(player)
                 sock.send(pickle.dumps(gameMsg))
                 while True:
-                    print("Waiting for Response : HAND=" + str(i))
+                    print("Waiting for Response : HAND " + str(str(player.id)))
                     data = pickle.loads(sock.recv(self.BUFFER_SIZE))
                     if data.getPlayer().firstBid == True:
                         self.table.money_in_the_pot += data.getPlayer().bid
-                    print("player.response:" + data.getPlayer().response)
-                    if len(data.getPlayer().response) > 0:
+
+                    print("player.response:" , data.getPlayer().responseAct)
+                    if data.getPlayer().responseAct != None:
+                        if data.getPlayer().responseAct == HandAct.RAISE:
+                            players = self.game.get_players().copy()
+                            players.remove(player)
+                            index = 0
+                        self.game.add_player(data.getPlayer())
                         break
+
 
         # Send ALl START Game
 

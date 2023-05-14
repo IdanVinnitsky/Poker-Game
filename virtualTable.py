@@ -3,8 +3,10 @@ import socket
 import threading
 from typing import List
 
+from EncryptionTool import EncryptionTool
 from HandAct import HandAct
 from player import Player
+from protocol import Protocol
 from table import Table
 from deck import Deck
 from game import Game
@@ -23,6 +25,7 @@ class VTable:
         deck = Deck()
         self.game = Game(1, deck)
         self.BUFFER_SIZE = 4096
+        self.enc_tool: EncryptionTool = EncryptionTool()
 
 
     def myfunc(self):
@@ -51,10 +54,16 @@ class VTable:
             self.handSocks[str(self.handNum)] = cli_sock
             print("Send : HAND=" + str(self.handNum))
 
-            player = Player("name" + str(self.handNum),self.handNum)
+            player = Player(self.handNum)
             self.game.add_player(player)
-            gameMsg = Data(self.game, player)
-            cli_sock.send(pickle.dumps(gameMsg))
+            self.game.init_game()
+            pr = Protocol()
+            message: str = pr.create_message1(player, self.game)
+
+            cli_sock.sendall(pickle.dumps(message))
+            data = pickle.loads(cli_sock.recv(self.BUFFER_SIZE))
+            cli_sock.sendall(self.enc_tool.public_key_data)
+
 
             self.handNum += 1
             if(self.handNum == 3):
@@ -83,12 +92,15 @@ class VTable:
 
         gameMsg:Data = Data(self.game, None)
 
+
+
+
         # for key, sock in self.handSocks.items():
         #     sock.send(pickle.dumps(gameMsg))
 
         for player in self.game.get_players():
             for i in range(2):
-                player.get_cards(self.game.deck)
+                player.set_cards(self.game.get_card(), self.game.get_card())
             sock = self.handSocks[str(player.id)]
             sock.send(pickle.dumps(gameMsg))
 

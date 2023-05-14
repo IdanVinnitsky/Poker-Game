@@ -1,3 +1,8 @@
+from typing import List
+
+from GameStatus import GameStatus
+from HandAct import HandAct
+from deck import Deck
 from gamemsg import Data
 from game import Game
 from player import Player
@@ -12,20 +17,17 @@ def dict_of_cards():
         for suit in suits:
             card = Card(value, suit)
             cards.append(card)
-
     dic = {}
-
     k = 0
     for i in range(2, 15):
         for j in range(1, 4):
-            dic[cards] = "i~j"
+            dic[cards] = str(i) + "~" + str(j)
             k += 1
-
     return dic
 
 
 class Protocol:
-    def __init__(self, gameMsg):
+    def __init__(self):
         """
         example of a message :
         size|game status|round status|your hand(2 cards)|players$
@@ -36,38 +38,95 @@ class Protocol:
         players : len(players):player1,player2,.. (player: id~status)
         param: gameMsg
         """
-        self.game = gameMsg.getGame()
-        self.player = gameMsg.getPlayer()
-        self.massage = self.create_massage()
+        self.size: int = 0
+        self.game_status: GameStatus
+        self.round_status: HandAct
+        self.your_hand: Player
+        self.players: List[Player]
 
-    def create_massage(self):
-        game_status = self.game.get_status()
-        round_status = self.game.get_in_round()
-        your_hand = "2:" + self.get_your_hand()
-        players = self.get_players()
-        mass = game_status + "|" + round_status + "|" + your_hand + "|" + players + "$"
+
+    def create_message1(self, player, game):
+        self.game_status = game.get_status()
+        self.round_status = game.round_status
+        your_hand = self.get_your_hand(player)
+        players = self.get_players(game)
+        mass = str(self.game_status.value) + "|" + str(self.round_status.value) + "|" + your_hand + "|" + players
         size = len(mass)
         return str(size) + "|" + mass
 
-    def get_players(self):
-        players = self.game.get_players()
+    def create_message(self, player: Player):
+        your_hand = self.get_your_hand(player)
+        mass = str(self.game_status.value) + "|" + str(self.round_status.value) + "|" + your_hand
+        size = len(mass)
+        return str(size) + "|" + mass
+
+
+    def get_players(self, game: Game):
+        players = game.get_players()
         res = f"{len(players)}:"
         for i in range(len(players)):
             player = players[i]
             if i != len(players)-1:
-                res += str(player.get_id()) + "~" + str(player.get_respone()) + "," # add get_respone in player
+                res += str(player.id) + "," + str(player.responseAct) + "," # add get_respone in player
             else:
-                res += str(player.get_id()) + "~" + str(player.get_respone())
+                res += str(player.id) + "," + str(player.responseAct) + ","
 
         return res
 
-    def get_your_hand(self):
-        cards = self.player.get_cards()
-        dictionary = dict_of_cards()
-        card1 = dictionary[cards[0]]
-        card2 = dictionary[cards[1]]
-        return card1+","+card2
+    def get_your_hand(self, player):
+        cards = player.get_cards()
+        if cards == None:
+            return str(player.id) + "," + str(player.responseAct.value) + ","  + "," + \
+                 "," + ","
+        # dictionary = dict_of_cards()
+        # card1 = dictionary[cards[0]]
+        # card2 = dictionary[cards[1]]
+        return str(player.id) + "," + str(player.responseAct.value) + "," + str(cards[0].getValue().value) + "," + \
+            str(cards[0].getSuit().value) + "," + str(cards[1].getValue().value) + "," + str(cards[1].getSuit().value)
+
+    def parse_your_hand(self, data: str):
+        if len(data) == 0:
+            return None
+        parts = data.split(',')
+        player = Player(parts[0])
+        player.responseAct = HandAct(parts[1])
+        if len(parts[2]) > 0:
+            card1: Card = Card(CardRank(int(parts[2])), Suit(parts[3]))
+            card2: Card = Card(CardRank(int(parts[4])), Suit(parts[5]))
+            player.set_cards(card1, card2)
+        return player
+
+
+    def from_message(self, msg: str):
+        parts = msg.split('|')
+        self.size = int(parts[0])
+        self.game_status = GameStatus(parts[1])
+        self.round_status = HandAct(parts[2])
+        self.your_hand = self.parse_your_hand(parts[3])
+        print("parts :", parts[4])
 
 
 
 
+        # self.round_status = self.game.round_status
+        # your_hand = "2:" + self.get_your_hand(player)
+        # players = self.get_players()
+        # mass = str(game_status.value) + "|" + str(round_status.value) + "|" + your_hand + "|" + players + "$"
+        # size = len(mass)
+        # return str(size) + "|" + mass
+
+
+if __name__ == '__main__':
+    deck = Deck()
+    game = Game(11, deck)
+    player = Player( 1)
+    player.generate_cards(deck)
+    print("cards:", player.get_cards())
+
+    p = Protocol()
+    msg = p.create_message1(player,game)
+    print("Message1:", msg)
+
+    p.from_message(msg)
+    print("Message2:", p.your_hand.get_cards())
+    print("Message2:", p.your_hand.responseAct)

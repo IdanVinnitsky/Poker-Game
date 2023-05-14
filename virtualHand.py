@@ -3,8 +3,12 @@ import pickle
 import socket
 import threading
 
+import rsa
+
+from GameStatus import GameStatus
 from HandAct import HandAct
 from player import Player
+from protocol import Protocol
 from table import Table
 from deck import Deck
 from game import Game
@@ -18,6 +22,7 @@ class VHand:
         self.addr = (self.server, self.port)
         self.BUFFER_SIZE = 4096
         self.player = None
+        self.public_key = None
 
 
     def connect(self):
@@ -35,17 +40,28 @@ class VHand:
     def initHand(self):
         try:
             self.client_sock.connect(self.addr)
-            gameMsg = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
-            game = gameMsg.getGame()
-            self.player = gameMsg.getPlayer()
+
+            # gameMsg = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
+            message: str = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
+            pr = Protocol()
+            pr.from_message(message)
+            self.player = pr.your_hand
+            if(pr.game_status == GameStatus.INIT):
+                send_msg = pr.create_message(self.player)
+                self.send(send_msg)
+                public_key_data = self.client_sock.recv(1024)
+                self.public_key = rsa.PublicKey.load_pkcs1(public_key_data)
+                print("key:" , self.public_key)
+
             print("Receive player:" + str(self.player.id))
             self.player.password = 'CLIENT' + str(self.player.id)
-            self.send(gameMsg)
+            # self.send(gameMsg)
             print("Waiting for starting game" + str(self.player.id))
-            gameMsg = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
-            game = gameMsg.getGame()
-            print("Game started" + str(game.started))
-            while (game.started == True):
+            message = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
+            pr = Protocol()
+            pr.from_message(message)
+            print("Game started" + str(pr.game_status))
+            while (pr.game_status == GameStatus.STARTED):
                 print("Waiting for server ...")
                 gameMsg = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
                 game = gameMsg.getGame()

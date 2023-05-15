@@ -58,7 +58,7 @@ class VTable:
             self.game.add_player(player)
             self.game.init_game()
             pr = Protocol()
-            message: str = pr.create_message1(player, self.game)
+            message: str = pr.create_message1(player, self.game, 0, 0)
 
             cli_sock.sendall(pickle.dumps(message))
             data = pickle.loads(cli_sock.recv(self.BUFFER_SIZE))
@@ -90,11 +90,6 @@ class VTable:
         print("START start_game")
         self.game.start_game()
 
-        gameMsg:Data = Data(self.game, None)
-
-
-
-
         # for key, sock in self.handSocks.items():
         #     sock.send(pickle.dumps(gameMsg))
 
@@ -102,23 +97,27 @@ class VTable:
             for i in range(2):
                 player.set_cards(self.game.get_card(), self.game.get_card())
             sock = self.handSocks[str(player.id)]
-            sock.send(pickle.dumps(gameMsg))
+            pr = Protocol()
+            msg = pr.create_message1(player, self.game, 0, 0)
+            sock.send(pickle.dumps(msg))
 
         # 3 cards; +1; +1
-        for i in range(4):
-            if i == 0:
+        for roundNum in range(4):
+            if roundNum == 0:
                 print("Round 1")
-            elif i == 1:
+                self.game.round_bid = 5
+            elif roundNum == 1:
                 print("Round 2")
+                self.game.round_bid = 0
                 self.game.first_flop()
-            elif i == 2:
-                print("Round 2")
-                self.game.add_to_flop()
-            elif i == 3:
+            elif roundNum == 2:
                 print("Round 3")
                 self.game.add_to_flop()
+            elif roundNum == 3:
+                print("Round 4")
+                self.game.add_to_flop()
             else:
-                raise NotImplementedError(f"Range ", i)
+                raise NotImplementedError(f"Range ", roundNum)
 
             # for i in range(1, len(self.handSocks)+1): #get playera
             index: int = 0
@@ -129,21 +128,27 @@ class VTable:
                 index += 1
                 print("player:" + str(player.id))
                 sock = self.handSocks[str(player.id)]
-                gameMsg.setPlayer(player)
-                sock.send(pickle.dumps(gameMsg))
+
+                pr = Protocol()
+                msg = pr.create_message1(player, self.game, roundNum, self.game.round_bid)
+                sock.send(pickle.dumps(msg))
+
                 while True:
                     print("Waiting for Response : HAND " + str(str(player.id)))
-                    data = pickle.loads(sock.recv(self.BUFFER_SIZE))
-                    if data.getPlayer().firstBid == True:
-                        self.game.jackpot += data.getPlayer().bid
+                    msg = pickle.loads(sock.recv(self.BUFFER_SIZE))
+                    pr = Protocol()
+                    pr.from_message(msg)
 
-                    print("player.response:" , data.getPlayer().responseAct)
-                    if data.getPlayer().responseAct != None:
-                        if data.getPlayer().responseAct == HandAct.RAISE:
+                    if roundNum == 0:
+                        self.game.jackpot += pr.your_hand.bid
+
+                    print("player.response:" , pr.your_hand.responseAct)
+                    if pr.your_hand.responseAct != None:
+                        if pr.your_hand.responseAct == HandAct.RAISE:
                             players = self.game.get_players().copy()
                             players.remove(player)
                             index = 0
-                        self.game.add_player(data.getPlayer())
+                        self.game.add_player(pr.your_hand)
                         break
 
 

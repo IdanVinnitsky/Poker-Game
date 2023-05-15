@@ -9,6 +9,7 @@ class Game:
         self.id = id
         self.deck = deck
         self.round = 0
+        self.round_bid = 0
         self.players: dict[str, Player] = {}
         self.players_in_the_round = []
         self.started = False
@@ -69,7 +70,7 @@ class Game:
         self.players[str(player.id)] = player
 
     def start_game(self):
-        self.status = True
+        self.status = GameStatus.STARTED
         self.deck.shuffle()
 
     def init_game(self):

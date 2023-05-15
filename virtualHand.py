@@ -63,20 +63,22 @@ class VHand:
             print("Game started" + str(pr.game_status))
             while (pr.game_status == GameStatus.STARTED):
                 print("Waiting for server ...")
-                gameMsg = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
-                game = gameMsg.getGame()
-                print("Round num:" + str(game.round))
-                print("My cards:" + str(gameMsg.getPlayer().cards))
-                print("Flop cards:" + str(gameMsg.getGame().get_flop()))
+                request = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
+                pr = Protocol()
+                pr.from_message(request)
+                # print("Round num:" + str(game.round))
+                print("My cards:" + str(pr.your_hand.cards))
+                # print("Flop cards:" + str(gameMsg.getGame().get_flop()))
                 othersAnswer = ""
-                for pl in game.get_players():
-                    if pl.id != gameMsg.getPlayer().id:
+                for pl in pr.players:
+                    if pl.id != pr.your_hand.id:
                         othersAnswer += "Player " + str(pl.id) + " says " + str(pl.responseAct) + " ;"
                 print("Other Players:" + othersAnswer)
                 res = self.printGameMenu()
-                player = gameMsg.getPlayer()
+                player = pr.your_hand
                 player.responseAct = res
-                self.send(gameMsg)
+                msg = pr.create_message(player)
+                self.send(msg)
         except Exception as e:
             print(e)
 

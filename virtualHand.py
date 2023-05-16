@@ -83,9 +83,7 @@ class VHand:
                 print("Round num:" + str(pr.round_num))
                 print("Game jackpot:", pr.jackpot)
                 print("My cards:" + str(pr.your_hand.cards))
-                print("Flop cards:" + str(pr.flop))
-
-
+                # print("Flop cards:" + str(gameMsg.getGame().get_flop()))
                 othersAnswer = ""
                 for pl in pr.players:
                     if pl.id != pr.your_hand.id:

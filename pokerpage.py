@@ -39,6 +39,7 @@ class PokerScreen(tk.Frame):
         # create a canvas widget for the background image
         self.canvas = tk.Canvas(self, width=900, height=500)
         self.canvas.pack(fill="both", expand=True)
+        self.player_answer = None
 
         try:
             self.photo = tk.PhotoImage(file="assets\\pokerscreen.png")
@@ -56,6 +57,9 @@ class PokerScreen(tk.Frame):
         except tk.TclError as e:
             print("Error loading image:", str(e))
             self.photo = None
+
+    def get_vhand(self):
+        return self.vhand
 
     def show_my_cards(self, card1, card2):
         self.card1_img = tk.PhotoImage(file="cards\\" + self.image_dict[card1])
@@ -105,7 +109,7 @@ class PokerScreen(tk.Frame):
 
     def buttons_1(self):
         # Create the button
-        self.bet_button = tk.Button(self.root, text="BET", command=button_clicked,
+        self.bet_button = tk.Button(self.root, text="BET", command=lambda: button_clicked("BET"),
                                     width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -114,7 +118,7 @@ class PokerScreen(tk.Frame):
         self.bet_button.place(x=x, y=y)
 
         # Create the button
-        self.check_button = tk.Button(self.root, text="CHECK", command=button_clicked,
+        self.check_button = tk.Button(self.root, text="CHECK", command=lambda: button_clicked("CHECK"),
                                       width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -123,13 +127,23 @@ class PokerScreen(tk.Frame):
         self.check_button.place(x=x, y=y)
 
         # Create the button
-        self.fold_button = tk.Button(self.root, text="FOLD", command=button_clicked,
+        self.fold_button = tk.Button(self.root, text="FOLD", command=lambda: button_clicked("FOLD"),
                                      width=10, height=2)
 
         # Place the button at the specified coordinates
         x = 780
         y = 450
         self.fold_button.place(x=x, y=y)
+
+    def button_clicked(self, button_name):
+        if button_name == "Play":
+            messagebox.showinfo("Play", "Let's play the game!")
+            self.disable_buttons()  # Disable buttons after Play button is pressed
+        elif button_name == "Rules":
+            messagebox.showinfo("Rules", "Here are the rules of the game:")
+            self.disable_buttons()  # Disable buttons after Rules button is pressed
+        elif button_name == "Exit":
+            self.master.quit()
 
     def buttons_2(self):
         # Create the button
@@ -158,15 +172,6 @@ class PokerScreen(tk.Frame):
         x = 780
         y = 450
         self.fold_button.place(x=x, y=y)
-
-    def button_pressed(self, button_name):
-        if button_name == "Play":
-            messagebox.showinfo("Play", "Let's play the game!")
-        elif button_name == "Rules":
-            messagebox.showinfo("Rules", "Here are the rules of the game:")
-        elif button_name == "Exit":
-            self.master.quit()
-
 
     def disable_buttons1(self):
         self.bet_button.config(state="disabled")
@@ -208,16 +213,25 @@ class PokerScreen(tk.Frame):
         # Create a canvas image item with the card image
         self.canvas.create_image(x, y, image=card_img, anchor="nw")
 
+    def update_screen(self):
+        print("AAAA")
 
+    def get_player_answer(self):
+        return self.player_answer
+
+    def update_screen(self):
+        self.show_my_cards(self.vhand.player.cards[0], self.vhand.player.cards[1])
 
 def main():
     root = tk.Tk()
     root.geometry("900x500")
 
     page = PokerScreen(root)
+
     page.pack(fill="both", expand=True)
 
-    page.show_other_players(0)
+    vhand = page.get_vhand()
+    vhand.initUIHand(page)
 
 
     root.mainloop()

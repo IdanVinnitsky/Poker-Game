@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import messagebox
-from pokerpage import PokerScreen
+from pokerpage import *
 
 def play():
     messagebox.showinfo("Play", "Let's play the game!")
+    main()
 
 
 def rules():

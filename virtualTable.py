@@ -64,9 +64,9 @@ class VTable:
             data = pickle.loads(cli_sock.recv(self.BUFFER_SIZE))
             cli_sock.sendall(self.enc_tool.public_key_data)
 
-
             self.handNum += 1
-            if(self.handNum == 3):
+
+            if self.handNum == 3:
                 t = threading.Thread(target=self.start_game, args=())
                 t.start()
 

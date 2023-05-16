@@ -37,7 +37,7 @@ class Protocol:
         your hand :  id, hand action, bid, card1 value, card1 suit, card2 value, card2 suit  (card: 2-14~1-4)
         players : len(players):player1,player2,.. (player: id,status;)
         flop: card1 value, card1 suit;card2 value, card2 suit;...card5 value, card5 suit
-        param: gameMsgs
+        param:
         """
         self.size: int = 0
         self.game_status: GameStatus

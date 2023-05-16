@@ -250,20 +250,17 @@ hand1 = HandRank.FOUR
 some_hand_rank = HandRank.FULL_HOUSE
 
 # Compare two HandRank values
-if HandRank.THREE > HandRank.PAIR:
+if HandRank.THREE.value > HandRank.PAIR.value:
     print("Three of a kind beats a pair")
 
 # Use a HandRank value in a conditional statement
-if some_hand_rank == HandRank.FULL_HOUSE:
+if some_hand_rank.value == HandRank.FULL_HOUSE.value:
     print("You have a full house!")
 
 # Convert an integer value back to a HandRank value
 hand_rank_value = 3
 hand_rank = HandRank(hand_rank_value)
 print(hand_rank == HandRank.THREE)  # prints True
-
-print(f"max of hand:")
-
 
 
 print()

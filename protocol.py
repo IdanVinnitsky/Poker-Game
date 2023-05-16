@@ -166,7 +166,7 @@ class Protocol:
 if __name__ == '__main__':
     deck = Deck()
     game = Game(11, deck)
-    player = Player( 1)
+    player = Player(1)
     player.generate_cards(deck)
     print("cards:", player.get_cards())
 

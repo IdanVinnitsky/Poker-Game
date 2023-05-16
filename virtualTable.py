@@ -71,9 +71,6 @@ class VTable:
                 t.start()
 
 
-
-
-
             # # receive data stream. it won't accept data packet greater than 1024 bytes
             # data = conn.recv(1024).decode()
             # if not data:

@@ -1,3 +1,5 @@
+import tkinter as tk
+from pokerpage import PokerScreen
 
 import pickle
 import socket
@@ -13,6 +15,7 @@ from table import Table
 from deck import Deck
 from game import Game
 from gamemsg import Data
+
 class VHand:
 
     def __init__(self, ip):
@@ -23,6 +26,7 @@ class VHand:
         self.BUFFER_SIZE = 4096
         self.player = None
         self.public_key = None
+
 
 
     def connect(self):
@@ -39,6 +43,8 @@ class VHand:
 
     def initHand(self):
         try:
+
+
             self.client_sock.connect(self.addr)
 
             # gameMsg = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
@@ -46,22 +52,25 @@ class VHand:
             pr = Protocol()
             pr.from_message(message)
             self.player = pr.your_hand
-            if(pr.game_status == GameStatus.INIT):
+
+            if pr.game_status == GameStatus.INIT:
                 send_msg = pr.create_message(self.player)
                 self.send(send_msg)
                 public_key_data = self.client_sock.recv(1024)
                 self.public_key = rsa.PublicKey.load_pkcs1(public_key_data)
-                print("key:" , self.public_key)
+                print("key:", self.public_key)
 
             print("Receive player:" + str(self.player.id))
             self.player.password = 'CLIENT' + str(self.player.id)
             # self.send(gameMsg)
             print("Waiting for starting game" + str(self.player.id))
+
             message = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
             pr = Protocol()
             pr.from_message(message)
             print("Game started" + str(pr.game_status))
-            while (pr.game_status == GameStatus.STARTED):
+
+            while pr.game_status == GameStatus.STARTED:
                 print("Waiting for server ...")
                 request = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
                 pr = Protocol()
@@ -69,6 +78,7 @@ class VHand:
                 # print("Round num:" + str(game.round))
                 print("My cards:" + str(pr.your_hand.cards))
                 # print("Flop cards:" + str(gameMsg.getGame().get_flop()))
+
                 othersAnswer = ""
                 for pl in pr.players:
                     if pl.id != pr.your_hand.id:
@@ -130,6 +140,7 @@ class VHand:
     def printMenu1(self):
         print("Menu Options: conn , ")
         self.initHand()
+
 
 if __name__ == '__main__':
     vtab = VHand("127.0.0.1")

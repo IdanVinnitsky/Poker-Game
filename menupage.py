@@ -1,6 +1,13 @@
 import tkinter as tk
 from tkinter import messagebox
-from tkinter import Tk
+from pokerpage import PokerScreen
+
+def play():
+    messagebox.showinfo("Play", "Let's play the game!")
+
+
+def rules():
+    messagebox.showinfo("Rules", "Here are the rules of the game:")
 
 
 class MenuPage(tk.Frame):
@@ -8,37 +15,32 @@ class MenuPage(tk.Frame):
         super().__init__(master)
         self.master = master
         self.pack()
+        self.canvas = tk.Canvas(self, width=900, height=500)
+        self.canvas.pack(fill="both", expand=True)
         self.create_widgets()
-        self.screen()
 
     def create_widgets(self):
-        self.play_button = tk.Button(self, text="Play", command=self.play, width=20, height=5, font=('Arial', 20))
-        self.play_button.pack(side="top")
+        self.photo = tk.PhotoImage(file="assets\\menu.png")
+        self.canvas.create_image(0, 0, image=self.photo, anchor="nw")
 
-        self.rules_button = tk.Button(self, text="Rules", command=self.rules, width=20, height=5, font=('Arial', 20))
-        self.rules_button.pack(side="top")
+        x = 380
+        y = 100
 
-        self.exit_button = tk.Button(self, text="Exit", command=self.master.quit, width=20, height=5,
-                                     font=('Arial', 20))
-        self.exit_button.pack(side="bottom")
+        self.play_button = tk.Button(self, text="Play", command=play,
+                                     width=10, height=2, font=('Arial', 20), bg="green")
+        self.play_button.place(x=x, y=y)
 
-    def play(self):
-        messagebox.showinfo("Play", "Let's play the game!")
+        self.rules_button = tk.Button(self, text="Rules", command=rules,
+                                      width=10, height=2, font=('Arial', 20), bg="green")
+        self.rules_button.place(x=x, y=y + 100)
 
-    def rules(self):
-        messagebox.showinfo("Rules", "Here are the rules of the game:")
-
-    def screen(self):
-        self.master.rowconfigure(0, weight=1)
-        self.master.columnconfigure(0, weight=1)
-        height = 650
-        width = 1240
-        x = (self.master.winfo_screenwidth() // 2) - (width // 2)
-        y = (self.master.winfo_screenheight() // 2) - (height // 4)
-        self.master.geometry('{}x{}+{}+{}'.format(width, height, x, y))
-        self.master.title('Account System')
+        self.exit_button = tk.Button(self, text="Exit", command=self.master.quit,
+                                     width=10, height=2, font=('Arial', 20), bg="green")
+        self.exit_button.place(x=x, y=y + 200)
 
 
-root = tk.Tk()
-menu_page = MenuPage(master=root)
-menu_page.mainloop()
+if __name__ == '__main__':
+    root = tk.Tk()
+    root.geometry("900x500")
+    menu_page = MenuPage(master=root)
+    menu_page.mainloop()

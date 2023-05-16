@@ -1,6 +1,8 @@
 import tkinter as tk
 from card import *
 import os
+from virtualHand import VHand
+from tkinter import messagebox
 
 
 def create_card_dict():
@@ -29,7 +31,8 @@ def button_clicked():
 class PokerScreen(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        self.parent = parent
+        self.root = parent
+        self.vhand = VHand("127.0.0.1")
 
         self.image_dict = create_card_dict()
 
@@ -37,18 +40,11 @@ class PokerScreen(tk.Frame):
         self.canvas = tk.Canvas(self, width=900, height=500)
         self.canvas.pack(fill="both", expand=True)
 
-        # create a photo object from the image file and display it on the canvas
         try:
             self.photo = tk.PhotoImage(file="assets\\pokerscreen.png")
-
-            # place the card images on the canvas at specified coordinates and size
-            self.card1_img = tk.PhotoImage(file="cards\\" + self.image_dict[Card(CardRank.ACE, Suit.SPADES)])
             self.canvas.create_image(0, 0, image=self.photo, anchor="nw")
-            self.canvas.create_image(440, 360, image=self.card1_img, anchor="nw")
-            self.canvas.create_image(366, 360, image=self.card1_img, anchor="nw")
 
             self.back_image = tk.PhotoImage(file="assets\\back_of_a_card.png")  # size : 74 x 107 px
-
 
             self.card1_flop = None
             self.card2_flop = None
@@ -56,12 +52,16 @@ class PokerScreen(tk.Frame):
             self.card4_flop = None
             self.card5_flop = None
 
-
-
-
         except tk.TclError as e:
             print("Error loading image:", str(e))
             self.photo = None
+
+    def show_my_cards(self, card1, card2):
+        self.card1_img = tk.PhotoImage(file="cards\\" + self.image_dict[card1])
+        self.card2_img = tk.PhotoImage(file="cards\\" + self.image_dict[card2])
+
+        self.canvas.create_image(440, 360, image=self.card1_img, anchor="nw")
+        self.canvas.create_image(366, 360, image=self.card2_img, anchor="nw")
 
     def set_first_flop(self, flop):
         self.card1_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[0]])
@@ -104,53 +104,74 @@ class PokerScreen(tk.Frame):
 
     def buttons_1(self):
         # Create the button
-        button = tk.Button(root, text="BET", command=button_clicked, width=10, height=2)
+        self.bet_button = tk.Button(self.root, text="BET", command=button_clicked, width=10, height=2)
 
         # Place the button at the specified coordinates
         x = 580
         y = 450
-        button.place(x=x, y=y)
+        self.bet_button.place(x=x, y=y)
 
         # Create the button
-        button = tk.Button(root, text="CHECK", command=button_clicked, width=10, height=2)
+        self.check_button = tk.Button(self.root, text="CHECK", command=button_clicked, width=10, height=2)
 
         # Place the button at the specified coordinates
         x = 680
         y = 450
-        button.place(x=x, y=y)
+        self.check_button.place(x=x, y=y)
 
         # Create the button
-        button = tk.Button(root, text="FOLD", command=button_clicked, width=10, height=2)
+        self.fold_button = tk.Button(self.root, text="FOLD", command=button_clicked, width=10, height=2)
 
         # Place the button at the specified coordinates
         x = 780
         y = 450
-        button.place(x=x, y=y)
+        self.fold_button.place(x=x, y=y)
 
     def buttons_2(self):
         # Create the button
-        button = tk.Button(root, text="CALL & RAISE", command=button_clicked, width=10, height=2)
+        self.callraise_button = tk.Button(self.root, text="CALL & RAISE", command=button_clicked, width=10, height=2)
 
         # Place the button at the specified coordinates
         x = 580
         y = 450
-        button.place(x=x, y=y)
+        self.callraise_button.place(x=x, y=y)
 
         # Create the button
-        button = tk.Button(root, text="CALL", command=button_clicked, width=10, height=2)
+        self.call_button = tk.Button(self.root, text="CALL", command=button_clicked, width=10, height=2)
 
         # Place the button at the specified coordinates
         x = 680
         y = 450
-        button.place(x=x, y=y)
+        self.call_button.place(x=x, y=y)
 
         # Create the button
-        button = tk.Button(root, text="FOLD", command=button_clicked, width=10, height=2)
+        self.fold_button = tk.Button(self.root, text="FOLD", command=button_clicked, width=10, height=2)
 
         # Place the button at the specified coordinates
         x = 780
         y = 450
-        button.place(x=x, y=y)
+        self.fold_button.place(x=x, y=y)
+
+    def button_pressed(self, button_name):
+        if button_name == "Play":
+            messagebox.showinfo("Play", "Let's play the game!")
+            self.disable_buttons()  # Disable buttons after Play button is pressed
+        elif button_name == "Rules":
+            messagebox.showinfo("Rules", "Here are the rules of the game:")
+            self.disable_buttons()  # Disable buttons after Rules button is pressed
+        elif button_name == "Exit":
+            self.master.quit()
+
+
+    def disable_buttons1(self):
+        self.bet_button.config(state="disabled")
+        self.check_button.config(state="disabled")
+        self.fold_button.config(state="disabled")
+
+    def enable_buttons1(self):
+        self.bet_button.config(state="normal")
+        self.check_button.config(state="normal")
+        self.fold_button.config(state="normal")
 
 
 
@@ -184,26 +205,28 @@ class PokerScreen(tk.Frame):
 
 
 
+def main():
+    root = tk.Tk()
+    root.geometry("900x500")
 
-root = tk.Tk()
-root.geometry("900x500")
+    page = PokerScreen(root)
+    page.pack(fill="both", expand=True)
 
-page = PokerScreen(root)
-page.pack(fill="both", expand=True)
+    page.show_other_players(0)
 
-page.show_other_players(1)
 
-card = Card(CardRank.TWO, Suit.SPADES)
-page.show_card_at_coordinates(card)
+    root.mainloop()
 
-page.buttons_1()
 
-flop = [Card(CardRank.ACE, Suit.SPADES),
-        Card(CardRank.ACE, Suit.SPADES),
-        Card(CardRank.ACE, Suit.SPADES)]
+if __name__ == '__main__':
+    main()
 
-page.set_first_flop(flop)
 
-page.show_first_flop()
 
-root.mainloop()
+'''
+# place the card images on the canvas at specified coordinates and size
+            self.card1_img = tk.PhotoImage(file="cards\\" + self.image_dict[Card(CardRank.ACE, Suit.SPADES)])
+            
+            self.canvas.create_image(440, 360, image=self.card1_img, anchor="nw")
+            self.canvas.create_image(366, 360, image=self.card1_img, anchor="nw")
+'''

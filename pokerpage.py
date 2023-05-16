@@ -44,7 +44,8 @@ class PokerScreen(tk.Frame):
             self.photo = tk.PhotoImage(file="assets\\pokerscreen.png")
             self.canvas.create_image(0, 0, image=self.photo, anchor="nw")
 
-            self.back_image = tk.PhotoImage(file="assets\\back_of_a_card.png")  # size : 74 x 107 px
+            self.back_image = tk.PhotoImage(file="assets\\back_of_a_card.png")
+            # size : 74 x 107 px
 
             self.card1_flop = None
             self.card2_flop = None
@@ -104,7 +105,8 @@ class PokerScreen(tk.Frame):
 
     def buttons_1(self):
         # Create the button
-        self.bet_button = tk.Button(self.root, text="BET", command=button_clicked, width=10, height=2)
+        self.bet_button = tk.Button(self.root, text="BET", command=button_clicked,
+                                    width=10, height=2)
 
         # Place the button at the specified coordinates
         x = 580
@@ -112,7 +114,8 @@ class PokerScreen(tk.Frame):
         self.bet_button.place(x=x, y=y)
 
         # Create the button
-        self.check_button = tk.Button(self.root, text="CHECK", command=button_clicked, width=10, height=2)
+        self.check_button = tk.Button(self.root, text="CHECK", command=button_clicked,
+                                      width=10, height=2)
 
         # Place the button at the specified coordinates
         x = 680
@@ -120,7 +123,8 @@ class PokerScreen(tk.Frame):
         self.check_button.place(x=x, y=y)
 
         # Create the button
-        self.fold_button = tk.Button(self.root, text="FOLD", command=button_clicked, width=10, height=2)
+        self.fold_button = tk.Button(self.root, text="FOLD", command=button_clicked,
+                                     width=10, height=2)
 
         # Place the button at the specified coordinates
         x = 780
@@ -129,7 +133,8 @@ class PokerScreen(tk.Frame):
 
     def buttons_2(self):
         # Create the button
-        self.callraise_button = tk.Button(self.root, text="CALL & RAISE", command=button_clicked, width=10, height=2)
+        self.callraise_button = tk.Button(self.root, text="CALL & RAISE", command=button_clicked,
+                                          width=10, height=2)
 
         # Place the button at the specified coordinates
         x = 580
@@ -137,7 +142,8 @@ class PokerScreen(tk.Frame):
         self.callraise_button.place(x=x, y=y)
 
         # Create the button
-        self.call_button = tk.Button(self.root, text="CALL", command=button_clicked, width=10, height=2)
+        self.call_button = tk.Button(self.root, text="CALL", command=button_clicked,
+                                     width=10, height=2)
 
         # Place the button at the specified coordinates
         x = 680
@@ -145,7 +151,8 @@ class PokerScreen(tk.Frame):
         self.call_button.place(x=x, y=y)
 
         # Create the button
-        self.fold_button = tk.Button(self.root, text="FOLD", command=button_clicked, width=10, height=2)
+        self.fold_button = tk.Button(self.root, text="FOLD", command=button_clicked,
+                                     width=10, height=2)
 
         # Place the button at the specified coordinates
         x = 780
@@ -155,10 +162,8 @@ class PokerScreen(tk.Frame):
     def button_pressed(self, button_name):
         if button_name == "Play":
             messagebox.showinfo("Play", "Let's play the game!")
-            self.disable_buttons()  # Disable buttons after Play button is pressed
         elif button_name == "Rules":
             messagebox.showinfo("Rules", "Here are the rules of the game:")
-            self.disable_buttons()  # Disable buttons after Rules button is pressed
         elif button_name == "Exit":
             self.master.quit()
 
@@ -225,7 +230,8 @@ if __name__ == '__main__':
 
 '''
 # place the card images on the canvas at specified coordinates and size
-            self.card1_img = tk.PhotoImage(file="cards\\" + self.image_dict[Card(CardRank.ACE, Suit.SPADES)])
+            self.card1_img = tk.PhotoImage
+            (file="cards\\" + self.image_dict[Card(CardRank.ACE, Suit.SPADES)])
             
             self.canvas.create_image(440, 360, image=self.card1_img, anchor="nw")
             self.canvas.create_image(366, 360, image=self.card1_img, anchor="nw")

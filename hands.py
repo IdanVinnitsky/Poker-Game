@@ -15,7 +15,6 @@ class HandRank(Enum):
     ROYAL_FLUSH = auto()
 
 
-
 class Hand:
     def __init__(self, name):
         self.__name = name
@@ -228,6 +227,7 @@ class Hand:
         return self.__get_highest_card(self.__hand)
 
 
+
 from card import *
 
 values = list(CardRank)
@@ -261,6 +261,8 @@ if some_hand_rank == HandRank.FULL_HOUSE:
 hand_rank_value = 3
 hand_rank = HandRank(hand_rank_value)
 print(hand_rank == HandRank.THREE)  # prints True
+
+print(f"max of hand:")
 
 
 

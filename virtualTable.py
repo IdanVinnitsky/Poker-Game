@@ -70,19 +70,6 @@ class VTable:
                 t = threading.Thread(target=self.start_game, args=())
                 t.start()
 
-
-
-
-
-            # # receive data stream. it won't accept data packet greater than 1024 bytes
-            # data = conn.recv(1024).decode()
-            # if not data:
-            #     # if data is not received break
-            #     break
-            # print("from connected user: " + str(data))
-            # data = input(' -> ')
-            # conn.send(data.encode())  # send data to the clients
-
         conn.close()  # close the connection
 
 
@@ -102,19 +89,18 @@ class VTable:
             sock.send(pickle.dumps(msg))
 
         # 3 cards; +1; +1
-        for roundNum in range(4):
-            if roundNum == 0:
-                print("Round 1")
+        for roundNum in range(1,5):
+            print(">>>>>>>>>>>>>>>>>>>>> ",)
+            print("Round ",roundNum)
+            self.game.round = roundNum
+            if roundNum == 1:
                 self.game.round_bid = 5
-            elif roundNum == 1:
-                print("Round 2")
+            elif roundNum == 2:
                 self.game.round_bid = 0
                 self.game.first_flop()
-            elif roundNum == 2:
-                print("Round 3")
-                self.game.add_to_flop()
             elif roundNum == 3:
-                print("Round 4")
+                self.game.add_to_flop()
+            elif roundNum == 4:
                 self.game.add_to_flop()
             else:
                 raise NotImplementedError(f"Range ", roundNum)
@@ -127,6 +113,9 @@ class VTable:
                 player = players[index]
                 index += 1
                 print("player:" + str(player.id))
+                print("Money on table :",self.game.jackpot)
+                print("Cards on table :", self.game.flop)
+
                 sock = self.handSocks[str(player.id)]
 
                 pr = Protocol()
@@ -135,21 +124,41 @@ class VTable:
 
                 while True:
                     print("Waiting for Response : HAND " + str(str(player.id)))
-                    msg = pickle.loads(sock.recv(self.BUFFER_SIZE))
+                    # data = pickle.loads(sock.recv(self.BUFFER_SIZE))
+                    data = sock.recv(self.BUFFER_SIZE)
+                    msg = self.enc_tool.decrypt(data)
                     pr = Protocol()
                     pr.from_message(msg)
 
-                    if roundNum == 0:
+                    if roundNum == 1:
                         self.game.jackpot += pr.your_hand.bid
 
                     print("player.response:" , pr.your_hand.responseAct)
                     if pr.your_hand.responseAct != None:
+                        current_player = self.game.get_player(pr.your_hand.id)
+                        current_player.responseAct = pr.your_hand.responseAct
+
                         if pr.your_hand.responseAct == HandAct.RAISE:
+                            self.game.jackpot += pr.your_hand.bid
+                            self.game.round_status = HandAct.RAISE
+                            self.game.round_bid = pr.your_hand.bid
                             players = self.game.get_players().copy()
                             players.remove(player)
                             index = 0
+
+                        if pr.your_hand.responseAct == HandAct.CALL:
+                            self.game.jackpot += pr.your_hand.bid
+
+                        if pr.your_hand.responseAct == HandAct.BET:
+                            self.game.jackpot += pr.your_hand.bid
+                            self.game.round_status = HandAct.BET
+                            self.game.round_bid = self.game.min_bid
+
                         self.game.add_player(pr.your_hand)
+
                         break
+
+
 
 
         # Send ALl START Game

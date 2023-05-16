@@ -22,7 +22,8 @@ class VHand:
         self.addr = (self.server, self.port)
         self.BUFFER_SIZE = 4096
         self.player = None
-        self.public_key = None
+        self.server_public_key = None
+        self.default_bit = 0
 
 
     def connect(self):
@@ -31,9 +32,21 @@ class VHand:
         except Exception as e:
             print(e)
 
-    def send(self, data):
+    def send1(self, data):
         try:
             self.client_sock.send(pickle.dumps(data))
+        except socket.error as e:
+            print(str(e))
+
+    def send(self, data):
+        if self.server_public_key == None:
+            self.send1(data)
+            return
+
+        try:
+            obj_bytes = pickle.dumps(data)
+            encrypted_data = rsa.encrypt(obj_bytes, self.server_public_key)
+            self.client_sock.send(encrypted_data)
         except socket.error as e:
             print(str(e))
 
@@ -49,13 +62,12 @@ class VHand:
             if(pr.game_status == GameStatus.INIT):
                 send_msg = pr.create_message(self.player)
                 self.send(send_msg)
-                public_key_data = self.client_sock.recv(1024)
-                self.public_key = rsa.PublicKey.load_pkcs1(public_key_data)
-                print("key:" , self.public_key)
+                server_public_key_data = self.client_sock.recv(1024)
+                self.server_public_key = rsa.PublicKey.load_pkcs1(server_public_key_data)
+                print("key:" , self.server_public_key)
 
             print("Receive player:" + str(self.player.id))
             self.player.password = 'CLIENT' + str(self.player.id)
-            # self.send(gameMsg)
             print("Waiting for starting game" + str(self.player.id))
             message = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
             pr = Protocol()
@@ -66,29 +78,78 @@ class VHand:
                 request = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
                 pr = Protocol()
                 pr.from_message(request)
-                # print("Round num:" + str(game.round))
+
+                print(">>>>>>>>>>>>>>>>>")
+                print("Round num:" + str(pr.round_num))
+                print("Game jackpot:", pr.jackpot)
                 print("My cards:" + str(pr.your_hand.cards))
-                # print("Flop cards:" + str(gameMsg.getGame().get_flop()))
+                print("Flop cards:" + str(pr.flop))
+
+
                 othersAnswer = ""
                 for pl in pr.players:
                     if pl.id != pr.your_hand.id:
                         othersAnswer += "Player " + str(pl.id) + " says " + str(pl.responseAct) + " ;"
                 print("Other Players:" + othersAnswer)
-                res = self.printGameMenu()
+
+                if pr.your_hand.responseAct == HandAct.FOLD:
+                    break
+
+                res = self.printGameMenu(pr)
                 player = pr.your_hand
                 player.responseAct = res
+                if pr.round_num == 1:
+                    if player.responseAct != HandAct.FOLD:
+                        player.bid = pr.round_bid
+                        self.player.money -= pr.round_bid
+
+                if player.responseAct == HandAct.RAISE:
+                    new_bet = self.printRaiseMenu(pr)
+                    player.bid = new_bet
+                    self.player.money -= new_bet
+
+                if player.responseAct == HandAct.BET or player.responseAct == HandAct.CALL:
+                    self.player.money -= pr.round_bid
+                    player.bid = pr.round_bid
+
                 msg = pr.create_message(player)
                 self.send(msg)
         except Exception as e:
             print(e)
 
-    def printGameMenu(self):
+
+    def printRaiseMenu(self, pr: Protocol):
         while True:
-            print("Menu Options: pass, raise" )
+            user_input = input("Enter new bet:")
+            return int(user_input)
+
+    def printGameMenu(self, pr: Protocol):
+        while True:
+            if pr.round_status == HandAct.NO_DEF:
+                print("Menu Options: fold (f), check (k), bet (b), call (l), raise (r)")
+            elif pr.round_status == HandAct.BET:
+                print("Menu Options: fold (f), call (l), raise (r)")
+            elif pr.round_status == HandAct.RAISE:
+                print("Menu Options: fold (f), call (l), raise (r)")
+            else:
+                print("Menu Options: fold (f), check (k), bet (b), call (l), raise (r)")
+
             # Get user input
             user_input = input("Enter a command: ")
-            print("User input:" + user_input)
-            return HandAct(user_input)
+            act = 'no_def'
+            if user_input == 'f':
+                act = 'fold'
+            elif user_input == 'k':
+                act = 'check'
+            elif user_input == 'b':
+                act = 'bet'
+            elif user_input == 'l':
+                act = 'call'
+            elif user_input == 'r':
+                act = 'raise'
+            action = HandAct(act)
+            print("User input:" + act)
+            return action
             # # Define dictionary of commands
             # commands = {
             #     "help": lambda: print("This is the help message"),

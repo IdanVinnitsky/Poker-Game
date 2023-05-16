@@ -10,6 +10,7 @@ class Game:
         self.deck = deck
         self.round = 0
         self.round_bid = 0
+        self.min_bid = 5
         self.players: dict[str, Player] = {}
         self.players_in_the_round = []
         self.started = False
@@ -62,6 +63,9 @@ class Game:
 
     def get_players(self):
         return list(self.players.values())
+
+    def get_player(self, id: int):
+        return self.players[str(id)]
 
     def get_num_of_p(self):
         return len(self.players)

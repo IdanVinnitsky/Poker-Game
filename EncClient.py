@@ -29,10 +29,10 @@ class EncrClient:
 
         # Encrypt the data using the public key and send it to the server
         data = 'Hello, server!|'
-        byte_data = bytes(data)
-        obj_bytes = pickle.dumps(data + self.enc_tool.public_key_data)
-        # encrypted_data = rsa.encrypt(obj_bytes,  self.public_key)
-        client_socket.send(obj_bytes)
+        # byte_data = bytes(data)
+        obj_bytes = pickle.dumps(data)
+        encrypted_data = rsa.encrypt(obj_bytes,  self.public_key)
+        client_socket.send(encrypted_data)
 
         # Close the connection
         client_socket.close()

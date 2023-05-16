@@ -72,7 +72,7 @@ class Protocol:
         players = game.get_players()
         res = ''
         for pl in players:
-            res += str(pl.id) + "," + str(pl.responseAct) + ";"
+            res += str(pl.id) + "," + str(pl.responseAct.value) + ";"
         res = res[:-1]
             # res = f"{len(players)}:"
         # for i in range(len(players)):
@@ -135,6 +135,7 @@ class Protocol:
         for p in parts:
             ws = p.split(',')
             player = Player(int(ws[0]))
+            player.responseAct = HandAct(ws[1])
             self.players.append(player)
 
     def from_message(self, msg: str):

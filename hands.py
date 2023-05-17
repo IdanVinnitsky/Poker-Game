@@ -16,9 +16,8 @@ class HandRank(Enum):
 
 
 class Hand:
-    def __init__(self, name):
-        self.__name = name
-        self.__hand = []
+    def __init__(self, hand):
+        self.__hand = hand
 
     def getName(self):
         return self.__name

@@ -98,7 +98,6 @@ class VHand:
         t = threading.Thread(target=self.running_game, args=())
         t.start()
 
-
     def running_game(self):
         try:
             # self.client_sock.connect(self.addr)
@@ -132,7 +131,7 @@ class VHand:
                 pr.from_message(request)
                 self.player = pr.your_hand
                 self.flop = pr.flop
-                self.screen.update_screen()
+                self.screen.update_screen(pr.get_num_players()-1)
 
                 print(">>>>>>>>>>>>>>>>>")
                 print("Round num:" + str(pr.round_num))

@@ -238,9 +238,11 @@ class PokerScreen(tk.Frame):
         self.player_answer = val
 
 
-    def update_screen(self):
+    def update_screen(self, num):
         self.show_my_cards(self.vhand.player.cards[0], self.vhand.player.cards[1])
         self.buttons_1()
+
+        self.show_other_players(num)
 
         if self.vhand.flop != None:
             if len(self.vhand.flop) == 3:

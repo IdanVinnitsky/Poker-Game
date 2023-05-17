@@ -49,6 +49,11 @@ class Protocol:
         self.players: List[Player] = []
         self.flop: List[Card] = []
 
+    def get_players(self):
+        return self.players
+
+    def get_num_players(self):
+        return len(self.players)
 
     def create_message1(self, player, game, roundNum, roundBid):
         self.game_status = game.get_status()

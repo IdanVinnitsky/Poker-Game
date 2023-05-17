@@ -13,9 +13,9 @@ from game import Game
 from gamemsg import Data
 import time
 
+from hands import *
 
 class VTable:
-
 
     def __init__(self, name, age):
         self.name = name
@@ -29,12 +29,22 @@ class VTable:
 
     def the_winner(self):
         dic_players = self.game.get_players()
+        dic_flops = {}
+        flop = self.game.get_flop()
+        for key, value in dic_players:  # key = 0,1,2,..value = Player
+                dic_flops[key] = list(value.get_cards()) + flop
+
         dic_hands = {}
-        new_dict = {}
-        #for key in keys_list:
-         #   if key in dictionary:
-          #      new_dict[key] = dictionary[key]
-        return new_dict
+        for key, value in dic_hands:  # value = flop = list of cards
+            dic_hands[key] = Hand(value)
+        dic_rank = {}
+        for key, value in dic_hands:  # value = Hand
+            dic_hands[key] = value.getHighestRank()
+
+        list = dic_rank.values()
+        max_hand = max(list)
+
+
 
     def myfunc(self):
         print("Hello my name is " + self.name)
@@ -97,7 +107,7 @@ class VTable:
             sock.send(pickle.dumps(msg))
 
         # 3 cards; +1; +1
-        for roundNum in range(1,5):
+        for roundNum in range(1, 5):
             print(">>>>>>>>>>>>>>>>>>>>> ",)
             print("Round ",roundNum)
             self.game.round = roundNum

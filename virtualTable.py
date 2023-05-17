@@ -27,6 +27,14 @@ class VTable:
         self.BUFFER_SIZE = 4096
         self.enc_tool: EncryptionTool = EncryptionTool()
 
+    def the_winner(self):
+        dic_players = self.game.get_players()
+        dic_hands = {}
+        new_dict = {}
+        #for key in keys_list:
+         #   if key in dictionary:
+          #      new_dict[key] = dictionary[key]
+        return new_dict
 
     def myfunc(self):
         print("Hello my name is " + self.name)
@@ -113,7 +121,7 @@ class VTable:
                 player = players[index]
                 index += 1
                 print("player:" + str(player.id))
-                print("Money on table :",self.game.jackpot)
+                print("Money on table :", self.game.jackpot)
                 print("Cards on table :", self.game.flop)
 
                 sock = self.handSocks[str(player.id)]

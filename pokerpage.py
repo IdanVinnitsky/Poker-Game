@@ -1,8 +1,11 @@
 import tkinter as tk
+
+from HandAct import HandAct
 from card import *
 import os
 from virtualHand import VHand
 from tkinter import messagebox
+from PIL import Image
 
 
 def create_card_dict():
@@ -24,8 +27,6 @@ def create_card_dict():
 
     return dictionary
 
-def button_clicked():
-    print("Button clicked!")
 
 
 class PokerScreen(tk.Frame):
@@ -58,6 +59,10 @@ class PokerScreen(tk.Frame):
             print("Error loading image:", str(e))
             self.photo = None
 
+    def button_clicked(self, act: str):
+        print("Button clicked!")
+        self.player_answer = HandAct(act)
+
     def get_vhand(self):
         return self.vhand
 
@@ -72,6 +77,19 @@ class PokerScreen(tk.Frame):
         self.card1_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[0]])
         self.card2_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[1]])
         self.card3_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[2]])
+
+    def set_2_flop(self, flop):
+        self.card1_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[0]])
+        self.card2_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[1]])
+        self.card3_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[2]])
+        self.card4_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[3]])
+
+    def set_3_flop(self, flop):
+        self.card1_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[0]])
+        self.card2_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[1]])
+        self.card3_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[2]])
+        self.card4_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[3]])
+        self.card5_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[4]])
 
     def set_card4_flop(self, card4):
         self.card4_flop = tk.PhotoImage(file="cards\\" + self.image_dict[card4])
@@ -109,7 +127,7 @@ class PokerScreen(tk.Frame):
 
     def buttons_1(self):
         # Create the button
-        self.bet_button = tk.Button(self.root, text="BET", command=lambda: button_clicked("BET"),
+        self.bet_button = tk.Button(self.root, text="BET", command=lambda: self.button_clicked("bet"),
                                     width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -118,7 +136,7 @@ class PokerScreen(tk.Frame):
         self.bet_button.place(x=x, y=y)
 
         # Create the button
-        self.check_button = tk.Button(self.root, text="CHECK", command=lambda: button_clicked("CHECK"),
+        self.check_button = tk.Button(self.root, text="CHECK", command=lambda: self.button_clicked("check"),
                                       width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -127,7 +145,7 @@ class PokerScreen(tk.Frame):
         self.check_button.place(x=x, y=y)
 
         # Create the button
-        self.fold_button = tk.Button(self.root, text="FOLD", command=lambda: button_clicked("FOLD"),
+        self.fold_button = tk.Button(self.root, text="FOLD", command=lambda: self.button_clicked("fold"),
                                      width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -135,19 +153,19 @@ class PokerScreen(tk.Frame):
         y = 450
         self.fold_button.place(x=x, y=y)
 
-    def button_clicked(self, button_name):
-        if button_name == "Play":
-            messagebox.showinfo("Play", "Let's play the game!")
-            self.disable_buttons()  # Disable buttons after Play button is pressed
-        elif button_name == "Rules":
-            messagebox.showinfo("Rules", "Here are the rules of the game:")
-            self.disable_buttons()  # Disable buttons after Rules button is pressed
-        elif button_name == "Exit":
-            self.master.quit()
+    # def button_clicked(self, button_name):
+    #     if button_name == "Play":
+    #         messagebox.showinfo("Play", "Let's play the game!")
+    #         self.disable_buttons()  # Disable buttons after Play button is pressed
+    #     elif button_name == "Rules":
+    #         messagebox.showinfo("Rules", "Here are the rules of the game:")
+    #         self.disable_buttons()  # Disable buttons after Rules button is pressed
+    #     elif button_name == "Exit":
+    #         self.master.quit()
 
     def buttons_2(self):
         # Create the button
-        self.callraise_button = tk.Button(self.root, text="CALL & RAISE", command=button_clicked,
+        self.callraise_button = tk.Button(self.root, text="CALL & RAISE", command=self.button_clicked("raise"),
                                           width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -156,7 +174,7 @@ class PokerScreen(tk.Frame):
         self.callraise_button.place(x=x, y=y)
 
         # Create the button
-        self.call_button = tk.Button(self.root, text="CALL", command=button_clicked,
+        self.call_button = tk.Button(self.root, text="CALL", command=self.button_clicked("call"),
                                      width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -165,7 +183,7 @@ class PokerScreen(tk.Frame):
         self.call_button.place(x=x, y=y)
 
         # Create the button
-        self.fold_button = tk.Button(self.root, text="FOLD", command=button_clicked,
+        self.fold_button = tk.Button(self.root, text="FOLD", command=self.button_clicked("fold"),
                                      width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -213,14 +231,32 @@ class PokerScreen(tk.Frame):
         # Create a canvas image item with the card image
         self.canvas.create_image(x, y, image=card_img, anchor="nw")
 
-    def update_screen(self):
-        print("AAAA")
-
     def get_player_answer(self):
         return self.player_answer
 
+    def set_player_answer(self, val):
+        self.player_answer = val
+
+
     def update_screen(self):
         self.show_my_cards(self.vhand.player.cards[0], self.vhand.player.cards[1])
+        self.buttons_1()
+
+        if self.vhand.flop != None:
+            if len(self.vhand.flop) == 3:
+                self.set_first_flop(self.vhand.flop)
+                self.show_first_flop()
+
+            if len(self.vhand.flop) == 4:
+                self.set_2_flop(self.vhand.flop)
+                self.show_first_flop()
+                self.show_card4_flop()
+
+            if len(self.vhand.flop) == 5:
+                self.set_3_flop(self.vhand.flop)
+                self.show_first_flop()
+                self.show_card4_flop()
+                self.show_card5_flop()
 
 def main():
     root = tk.Tk()

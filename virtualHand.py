@@ -27,6 +27,9 @@ class VHand:
         self.server_public_key = None
         self.default_bit = 0
         self.screen = None
+        self.flop = None
+        self.otherHands = None
+        self.playerAct: HandAct = HandAct.NO_DEF
 
     def connect(self):
         try:
@@ -127,7 +130,8 @@ class VHand:
                 request = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
                 pr = Protocol()
                 pr.from_message(request)
-
+                self.player = pr.your_hand
+                self.flop = pr.flop
                 self.screen.update_screen()
 
                 print(">>>>>>>>>>>>>>>>>")
@@ -145,15 +149,16 @@ class VHand:
                     break
 
 
-                ans =None
+                ans = None
                 while True:
                     ans = self.screen.get_player_answer()
                     if ans != None:
+                        self.screen.set_player_answer(None)
                         break
 
                 player = pr.your_hand
-                res = self.printGameMenu(pr)
-                player.responseAct = res
+                # res = self.printGameMenu(pr)
+                player.responseAct = ans
                 if pr.round_num == 1:
                     if player.responseAct != HandAct.FOLD:
                         player.bid = pr.round_bid
@@ -207,7 +212,7 @@ class VHand:
                 request = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
                 pr = Protocol()
                 pr.from_message(request)
-
+                self.flop = pr.flop
                 print(">>>>>>>>>>>>>>>>>")
                 print("Round num:" + str(pr.round_num))
                 print("Game jackpot:", pr.jackpot)

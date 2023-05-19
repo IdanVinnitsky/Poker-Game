@@ -5,8 +5,9 @@ from typing import List
 
 from EncryptionTool import EncryptionTool
 from HandAct import HandAct
+from ProtocolAct import ProtocolAct
 from player import Player
-from protocol import Protocol
+from gameprotocol import GameProtocol
 from table import Table
 from deck import Deck
 from game import Game
@@ -75,8 +76,8 @@ class VTable:
             player = Player(self.handNum)
             self.game.add_player(player)
             self.game.init_game()
-            pr = Protocol()
-            message: str = pr.create_message1(player, self.game, 0, 0)
+            pr = GameProtocol()
+            message: str = pr.create_message1(ProtocolAct.GAME, player, self.game, 0, 0)
 
             cli_sock.sendall(pickle.dumps(message))
             data = pickle.loads(cli_sock.recv(self.BUFFER_SIZE))
@@ -102,8 +103,8 @@ class VTable:
             for i in range(2):
                 player.set_cards(self.game.get_card(), self.game.get_card())
             sock = self.handSocks[str(player.id)]
-            pr = Protocol()
-            msg = pr.create_message1(player, self.game, 0, 0)
+            pr = GameProtocol()
+            msg = pr.create_message1(ProtocolAct.GAME, player, self.game, 0, 0)
             sock.send(pickle.dumps(msg))
 
         # 3 cards; +1; +1
@@ -136,8 +137,8 @@ class VTable:
 
                 sock = self.handSocks[str(player.id)]
 
-                pr = Protocol()
-                msg = pr.create_message1(player, self.game, roundNum, self.game.round_bid)
+                pr = GameProtocol()
+                msg = pr.create_message1(ProtocolAct.GAME, player, self.game, roundNum, self.game.round_bid)
                 sock.send(pickle.dumps(msg))
 
                 while True:
@@ -145,7 +146,7 @@ class VTable:
                     # data = pickle.loads(sock.recv(self.BUFFER_SIZE))
                     data = sock.recv(self.BUFFER_SIZE)
                     msg = self.enc_tool.decrypt(data)
-                    pr = Protocol()
+                    pr = GameProtocol()
                     pr.from_message(msg)
 
                     if roundNum == 1:

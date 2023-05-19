@@ -7,8 +7,9 @@ import rsa
 
 from GameStatus import GameStatus
 from HandAct import HandAct
+from ProtocolAct import ProtocolAct
 from player import Player
-from protocol import Protocol
+from gameprotocol import GameProtocol
 from table import Table
 from deck import Deck
 from game import Game
@@ -66,12 +67,12 @@ class VHand:
 
             # gameMsg = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
             message: str = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
-            pr = Protocol()
+            pr = GameProtocol()
             pr.from_message(message)
             self.player = pr.your_hand
 
             if pr.game_status == GameStatus.INIT:
-                send_msg = pr.create_message(self.player)
+                send_msg = pr.create_message(ProtocolAct.GAME, self.player)
                 self.send(send_msg)
                 server_public_key_data = self.client_sock.recv(1024)
                 self.server_public_key = rsa.PublicKey.load_pkcs1(server_public_key_data)
@@ -81,7 +82,7 @@ class VHand:
             self.player.password = 'CLIENT' + str(self.player.id)
             print("Waiting for starting game" + str(self.player.id))
             message = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
-            pr = Protocol()
+            pr = GameProtocol()
             pr.from_message(message)
             print("Game started" + str(pr.game_status))
 
@@ -104,12 +105,12 @@ class VHand:
 
             # gameMsg = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
             message: str = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
-            pr = Protocol()
+            pr = GameProtocol()
             pr.from_message(message)
             self.player = pr.your_hand
 
             if pr.game_status == GameStatus.INIT:
-                send_msg = pr.create_message(self.player)
+                send_msg = pr.create_message(ProtocolAct.GAME, self.player)
                 self.send(send_msg)
                 server_public_key_data = self.client_sock.recv(1024)
                 self.server_public_key = rsa.PublicKey.load_pkcs1(server_public_key_data)
@@ -119,7 +120,7 @@ class VHand:
             self.player.password = 'CLIENT' + str(self.player.id)
             print("Waiting for starting game" + str(self.player.id))
             message = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
-            pr = Protocol()
+            pr = GameProtocol()
             pr.from_message(message)
             print("Game started" + str(pr.game_status))
 
@@ -127,7 +128,7 @@ class VHand:
 
                 print("Waiting for server ...")
                 request = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
-                pr = Protocol()
+                pr = GameProtocol()
                 pr.from_message(request)
                 self.player = pr.your_hand
                 self.flop = pr.flop
@@ -172,7 +173,7 @@ class VHand:
                     self.player.money -= pr.round_bid
                     player.bid = pr.round_bid
 
-                msg = pr.create_message(player)
+                msg = pr.create_message(ProtocolAct.GAME, player)
                 self.send(msg)
 
         except Exception as e:
@@ -186,12 +187,12 @@ class VHand:
 
             # gameMsg = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
             message: str = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
-            pr = Protocol()
+            pr = GameProtocol()
             pr.from_message(message)
             self.player = pr.your_hand
 
             if pr.game_status == GameStatus.INIT:
-                send_msg = pr.create_message(self.player)
+                send_msg = pr.create_message(ProtocolAct.GAME, self.player)
                 self.send(send_msg)
                 server_public_key_data = self.client_sock.recv(1024)
                 self.server_public_key = rsa.PublicKey.load_pkcs1(server_public_key_data)
@@ -201,7 +202,7 @@ class VHand:
             self.player.password = 'CLIENT' + str(self.player.id)
             print("Waiting for starting game" + str(self.player.id))
             message = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
-            pr = Protocol()
+            pr = GameProtocol()
             pr.from_message(message)
             print("Game started" + str(pr.game_status))
 
@@ -209,7 +210,7 @@ class VHand:
 
                 print("Waiting for server ...")
                 request = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
-                pr = Protocol()
+                pr = GameProtocol()
                 pr.from_message(request)
                 self.flop = pr.flop
                 print(">>>>>>>>>>>>>>>>>")
@@ -243,19 +244,19 @@ class VHand:
                     self.player.money -= pr.round_bid
                     player.bid = pr.round_bid
 
-                msg = pr.create_message(player)
+                msg = pr.create_message(ProtocolAct.GAME, player)
                 self.send(msg)
 
         except Exception as e:
             print(e)
 
 
-    def printRaiseMenu(self, pr: Protocol):
+    def printRaiseMenu(self, pr: GameProtocol):
         while True:
             user_input = input("Enter new bet:")
             return int(user_input)
 
-    def printGameMenu(self, pr: Protocol):
+    def printGameMenu(self, pr: GameProtocol):
         while True:
             if pr.round_status == HandAct.NO_DEF:
                 print("Menu Options: fold (f), check (k), bet (b), call (l), raise (r)")

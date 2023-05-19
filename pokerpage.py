@@ -7,6 +7,7 @@ from virtualHand import VHand
 from tkinter import messagebox
 from PIL import Image
 
+from PIL import ImageTk, Image
 
 def create_card_dict():
     folder_path = 'cards'
@@ -43,10 +44,10 @@ class PokerScreen(tk.Frame):
         self.player_answer = None
 
         try:
-            self.photo = tk.PhotoImage(file="assets\\pokerscreen.png")
+            self.photo = tk.PhotoImage(file="assets/pokerscreen.png")
             self.canvas.create_image(0, 0, image=self.photo, anchor="nw")
 
-            self.back_image = tk.PhotoImage(file="assets\\back_of_a_card.png")
+            self.back_image = tk.PhotoImage(file="assets/back_of_a_card.png")
             # size : 74 x 107 px
 
             self.card1_flop = None
@@ -67,32 +68,32 @@ class PokerScreen(tk.Frame):
         return self.vhand
 
     def show_my_cards(self, card1, card2):
-        self.card1_img = tk.PhotoImage(file="cards\\" + self.image_dict[card1])
-        self.card2_img = tk.PhotoImage(file="cards\\" + self.image_dict[card2])
+        self.card1_img = tk.PhotoImage(file="cards/" + self.image_dict[card1])
+        self.card2_img = tk.PhotoImage(file="cards/" + self.image_dict[card2])
 
         self.canvas.create_image(440, 360, image=self.card1_img, anchor="nw")
         self.canvas.create_image(366, 360, image=self.card2_img, anchor="nw")
 
     def set_first_flop(self, flop):
-        self.card1_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[0]])
-        self.card2_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[1]])
-        self.card3_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[2]])
+        self.card1_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[0]])
+        self.card2_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[1]])
+        self.card3_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[2]])
 
     def set_2_flop(self, flop):
-        self.card1_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[0]])
-        self.card2_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[1]])
-        self.card3_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[2]])
-        self.card4_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[3]])
+        # self.card1_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[0]])
+        # self.card2_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[1]])
+        # self.card3_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[2]])
+        self.card4_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[3]])
 
     def set_3_flop(self, flop):
-        self.card1_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[0]])
-        self.card2_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[1]])
-        self.card3_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[2]])
-        self.card4_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[3]])
-        self.card5_flop = tk.PhotoImage(file="cards\\" + self.image_dict[flop[4]])
+        # self.card1_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[0]])
+        # self.card2_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[1]])
+        # self.card3_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[2]])
+        # self.card4_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[3]])
+        self.card5_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[4]])
 
     def set_card4_flop(self, card4):
-        self.card4_flop = tk.PhotoImage(file="cards\\" + self.image_dict[card4])
+        self.card4_flop = tk.PhotoImage(file="cards/" + self.image_dict[card4])
 
     def show_card4_flop(self):
         x = 472
@@ -105,7 +106,7 @@ class PokerScreen(tk.Frame):
         self.canvas.create_image(x, y, image=self.card5_flop, anchor="nw")
 
     def set_card5_flop(self, card5):
-        self.card4_flop = tk.PhotoImage(file="cards\\" + self.image_dict[card5])
+        self.card4_flop = tk.PhotoImage(file="cards/" + self.image_dict[card5])
 
 
     def show_first_flop(self):
@@ -153,16 +154,6 @@ class PokerScreen(tk.Frame):
         y = 450
         self.fold_button.place(x=x, y=y)
 
-    # def button_clicked(self, button_name):
-    #     if button_name == "Play":
-    #         messagebox.showinfo("Play", "Let's play the game!")
-    #         self.disable_buttons()  # Disable buttons after Play button is pressed
-    #     elif button_name == "Rules":
-    #         messagebox.showinfo("Rules", "Here are the rules of the game:")
-    #         self.disable_buttons()  # Disable buttons after Rules button is pressed
-    #     elif button_name == "Exit":
-    #         self.master.quit()
-
     def buttons_2(self):
         # Create the button
         self.callraise_button = tk.Button(self.root, text="CALL & RAISE", command=self.button_clicked("raise"),
@@ -190,6 +181,15 @@ class PokerScreen(tk.Frame):
         x = 780
         y = 450
         self.fold_button.place(x=x, y=y)
+
+    def button_pressed1(self, button_name):
+        if button_name == "Play":
+            messagebox.showinfo("Play", "Let's play the game!")
+        elif button_name == "Rules":
+            messagebox.showinfo("Rules", "Here are the rules of the game:")
+        elif button_name == "Exit":
+            self.master.quit()
+
 
     def disable_buttons1(self):
         self.bet_button.config(state="disabled")
@@ -226,7 +226,7 @@ class PokerScreen(tk.Frame):
 
         # Get the image file path for the specified card
         card_image_file = self.image_dict[card]
-        card_img = tk.PhotoImage(file="cards\\" + card_image_file)
+        card_img = tk.PhotoImage(file="cards/" + card_image_file)
 
         # Create a canvas image item with the card image
         self.canvas.create_image(x, y, image=card_img, anchor="nw")
@@ -265,7 +265,6 @@ def main():
     root.geometry("900x500")
 
     page = PokerScreen(root)
-
     page.pack(fill="both", expand=True)
 
     vhand = page.get_vhand()

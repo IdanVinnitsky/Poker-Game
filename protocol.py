@@ -9,6 +9,7 @@ from player import Player
 from card import *
 
 
+
 def dict_of_cards():
     cards = []
     values = list(CardRank)
@@ -30,12 +31,13 @@ class Protocol:
     def __init__(self):
         """
         example of a message :
-        size|game status|round status|round num|round_bid|jackpot|your hand(2 cards)|players|flop
+        size|protocol type|game status|round status|round num|round_bid|jackpot|your hand(2 cards)|players|flop$
         size : a number
+        protocol type: GAME, LOGIN,
         game status: string
         round status: string
         your hand :  id, hand action, bid, card1 value, card1 suit, card2 value, card2 suit  (card: 2-14~1-4)
-        players : len(players):player1,player2,.. (player: id,status;)
+        players : player1;player2;.. (player: id, name, status;)
         flop: card1 value, card1 suit;card2 value, card2 suit;...card5 value, card5 suit
         param:
         """
@@ -64,13 +66,13 @@ class Protocol:
         mass = str(self.game_status.value) + "|" + str(self.round_status.value) + "|" + str(roundNum) + "|" + \
                str(roundBid) + "|" + str(game.jackpot) + "|" + your_hand + "|" + players + "|" + flop
         size = len(mass)
-        return str(size) + "|" + mass
+        return str(size) + "|" + mass + "$"
 
     def create_message(self, player: Player):
         your_hand = self.get_your_hand_str(player)
         mass = str(self.game_status.value) + "|" + str(self.round_status.value) + "|0|0|0|" + your_hand
         size = len(mass)
-        return str(size) + "|" + mass
+        return str(size) + "|" + mass + "$"
 
 
     def get_players_str(self, game: Game):
@@ -144,6 +146,7 @@ class Protocol:
             self.players.append(player)
 
     def from_message(self, msg: str):
+        msg = msg[:-1]
         parts = msg.split('|')
         self.size = int(parts[0])
         self.game_status = GameStatus(parts[1])

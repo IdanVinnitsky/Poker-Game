@@ -5,3 +5,4 @@ class GameStatus(Enum):
     INIT = 'INIT'
     WAITING = 'waiting'
     STARTED = 'started'
+    REQUEST_START = 'request_started'

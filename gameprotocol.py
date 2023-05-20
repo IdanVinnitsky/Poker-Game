@@ -44,8 +44,8 @@ class GameProtocol:
         """
         self.size: int = 0
         self.protocolAct: ProtocolAct = ProtocolAct.NO_DEF
-        self.game_status: GameStatus
-        self.round_status: HandAct
+        self.game_status: GameStatus = GameStatus.NO_DEF
+        self.round_status: HandAct = HandAct.NO_DEF
         self.round_num: int = 0
         self.round_bid: int = 0
         self.jackpot: int = 0
@@ -80,12 +80,20 @@ class GameProtocol:
         size = len(msg)
         return str(size) + "|" + msg + "$"
 
+    def create_message2(self, protocolAct, game_status: GameStatus,  player: Player):
+        self.protocolAct = protocolAct
+        your_hand = self.get_your_hand_str(player)
+        msg = str(self.protocolAct.value) + "|" + str(game_status.value) + "|" + str(self.round_status.value) + \
+              "|0|0|0|" + your_hand
+        size = len(msg)
+        return str(size) + "|" + msg + "$"
+
 
     def get_players_str(self, game: Game):
         players = game.get_players()
         res = ''
         for pl in players:
-            res += str(pl.id) + "," + str(pl.name) + "," + str(pl.responseAct.value) + "," + str(pl.bid)
+            res += str(pl.id) + "," + str(pl.name) +  "," + str(pl.password) + "," + str(pl.responseAct.value) + "," + str(pl.bid)
             cards = pl.get_cards()
             if cards == None:
                 res += "," + "," + "," + "," + ",;"
@@ -100,12 +108,12 @@ class GameProtocol:
     def get_your_hand_str(self, player):
         cards = player.get_cards()
         if cards == None:
-            return str(player.id) + "," + str(player.name) + "," + str(player.responseAct.value) + "," + str(player.bid) + "," + "," + \
+            return str(player.id) + "," + str(player.name)  + "," + str(player.password) + "," + str(player.responseAct.value) + "," + str(player.bid) + "," + "," + \
                  "," + "," + ","
         # dictionary = dict_of_cards()
         # card1 = dictionary[cards[0]]
         # card2 = dictionary[cards[1]]
-        return str(player.id) + "," + str(player.name) + "," + str(player.responseAct.value) + "," + str(player.bid) + "," + \
+        return str(player.id) + "," + str(player.name) + "," + str(player.password) + "," + str(player.responseAct.value) + "," + str(player.bid) + "," + \
             str(cards[0].getValue().value) + "," + str(cards[0].getSuit().value) + "," + str(cards[1].getValue().value) + \
             "," + str(cards[1].getSuit().value)
 
@@ -125,17 +133,19 @@ class GameProtocol:
         parts = data.split(',')
         player = Player(parts[0])
         player.name = parts[1]
-        player.responseAct = HandAct(parts[2])
-        player.bid = int(parts[3])
-        if len(parts[4]) > 0:
-            card1: Card = Card(CardRank(int(parts[4])), Suit(parts[5]))
-            card2: Card = Card(CardRank(int(parts[6])), Suit(parts[7]))
+        player.password = parts[2]
+        player.responseAct = HandAct(parts[3])
+        player.bid = int(parts[4])
+        if len(parts[5]) > 0:
+            card1: Card = Card(CardRank(int(parts[5])), Suit(parts[6]))
+            card2: Card = Card(CardRank(int(parts[7])), Suit(parts[8]))
             player.set_cards(card1, card2)
         return player
 
     def parse_flop(self, data: str):
         if len(data) == 0:
             return None
+        self.flop.clear()
         cards = data.split(';')
         for card in cards:
             part_card = card.split(',')

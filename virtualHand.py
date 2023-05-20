@@ -31,6 +31,7 @@ class VHand:
         self.flop = None
         self.otherHands = None
         self.playerAct: HandAct = HandAct.NO_DEF
+        self.in_game_protocol: GameProtocol = GameProtocol()
 
     def connect(self):
         try:
@@ -47,14 +48,13 @@ class VHand:
     def send(self, data):
         if self.server_public_key == None:
             self.send1(data)
-            return
-
-        try:
-            obj_bytes = pickle.dumps(data)
-            encrypted_data = rsa.encrypt(obj_bytes, self.server_public_key)
-            self.client_sock.send(encrypted_data)
-        except socket.error as e:
-            print(str(e))
+        else:
+            try:
+                obj_bytes = pickle.dumps(data)
+                encrypted_data = rsa.encrypt(obj_bytes, self.server_public_key)
+                self.client_sock.send(encrypted_data)
+            except socket.error as e:
+                print(str(e))
 
     def init_hand_game(self):
         self.conncting()
@@ -89,7 +89,7 @@ class VHand:
         except Exception as e:
             print(e)
 
-    def initUIHand(self, sc):
+    def initUIHand1(self, sc):
         try:
             self.screen = sc
             self.client_sock.connect(self.addr)
@@ -99,7 +99,149 @@ class VHand:
         t = threading.Thread(target=self.running_game, args=())
         t.start()
 
+    def initUIHand(self, sc):
+        try:
+            self.screen = sc
+            self.client_sock.connect(self.addr)
+
+            server_public_key_data = self.client_sock.recv(1024)
+            self.server_public_key = rsa.PublicKey.load_pkcs1(server_public_key_data)
+            print("key:", self.server_public_key)
+
+
+        except Exception as e:
+            print(e)
+
+    def startGame(self):
+        t = threading.Thread(target=self.running_game, args=())
+        t.start()
+
     def running_game(self):
+        try:
+            pr = GameProtocol()
+            msg = pr.create_message2(ProtocolAct.REQUEST_START, GameStatus.REQUEST_START, self.player)
+            self.send(msg)
+
+            while True:
+                try:
+                    print("Waitning for data:")
+                    message: str = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
+                    self.in_game_protocol.from_message(message)
+
+                    print("Receive data:", message)
+
+                    if self.in_game_protocol.protocolAct == ProtocolAct.GAME:
+                        if self.in_game_protocol.game_status == GameStatus.STARTED:
+                            self.player = self.in_game_protocol.your_hand
+                            self.flop = self.in_game_protocol.flop
+                            self.screen.update_screen(self.in_game_protocol.get_num_players() - 1)
+
+                except Exception as e:
+                    print(e)
+            # self.client_sock.connect(self.addr)
+
+            # gameMsg = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
+            message: str = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
+            pr = GameProtocol()
+            pr.from_message(message)
+            self.player = pr.your_hand
+
+            if pr.game_status == GameStatus.INIT:
+                send_msg = pr.create_message(ProtocolAct.GAME, self.player)
+                self.send(send_msg)
+                server_public_key_data = self.client_sock.recv(1024)
+                self.server_public_key = rsa.PublicKey.load_pkcs1(server_public_key_data)
+                print("key:", self.server_public_key)
+
+            print("Receive player:" + str(self.player.id))
+            self.player.password = 'CLIENT' + str(self.player.id)
+            print("Waiting for starting game" + str(self.player.id))
+            message = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
+            pr = GameProtocol()
+            pr.from_message(message)
+            print("Game started" + str(pr.game_status))
+
+            while pr.game_status == GameStatus.STARTED:
+
+                print("Waiting for server ...")
+                request = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
+                pr = GameProtocol()
+                pr.from_message(request)
+                self.player = pr.your_hand
+                self.flop = pr.flop
+                self.screen.update_screen(pr.get_num_players()-1)
+
+                print(">>>>>>>>>>>>>>>>>")
+                print("Round num:" + str(pr.round_num))
+                print("Game jackpot:", pr.jackpot)
+                print("My cards:" + str(pr.your_hand.cards))
+                # print("Flop cards:" + str(gameMsg.getGame().get_flop()))
+                othersAnswer = ""
+                for pl in pr.players:
+                    if pl.id != pr.your_hand.id:
+                        othersAnswer += "Player " + str(pl.id) + " says " + str(pl.responseAct) + " ;"
+                print("Other Players:" + othersAnswer)
+
+                if pr.your_hand.responseAct == HandAct.FOLD:
+                    break
+
+
+                ans = None
+                while True:
+                    ans = self.screen.get_player_answer()
+                    if ans != None:
+                        self.screen.set_player_answer(None)
+                        break
+
+                player = pr.your_hand
+                # res = self.printGameMenu(pr)
+                player.responseAct = ans
+                if pr.round_num == 1:
+                    if player.responseAct != HandAct.FOLD:
+                        player.bid = pr.round_bid
+                        self.player.money -= pr.round_bid
+
+                if player.responseAct == HandAct.RAISE:
+                    new_bet = self.printRaiseMenu(pr)
+                    player.bid = new_bet
+                    self.player.money -= new_bet
+
+                if player.responseAct == HandAct.BET or player.responseAct == HandAct.CALL:
+                    self.player.money -= pr.round_bid
+                    player.bid = pr.round_bid
+
+                msg = pr.create_message(ProtocolAct.GAME, player)
+                self.send(msg)
+
+        except Exception as e:
+            print(e)
+
+    def  send_player_response(self, act: HandAct):
+        print("Player Action", act)
+        player = self.in_game_protocol.your_hand
+
+        player.responseAct = act
+        if self.in_game_protocol.round_num == 1:
+            if player.responseAct != HandAct.FOLD:
+                player.bid = self.in_game_protocol.round_bid
+                self.player.money -= self.in_game_protocol.round_bid
+
+        if player.responseAct == HandAct.RAISE:
+            print("RAISE")
+            # new_bet = self.printRaiseMenu(self.in_game_protocol)
+            # show message
+            # player.bid = new_bet
+            # self.player.money -= new_bet
+
+        if player.responseAct == HandAct.BET or player.responseAct == HandAct.CALL:
+            self.player.money -= self.in_game_protocol.round_bid
+            player.bid = self.in_game_protocol.round_bid
+
+        msg = self.in_game_protocol.create_message(ProtocolAct.GAME, player)
+        self.send(msg)
+
+
+    def running_game1(self):
         try:
             # self.client_sock.connect(self.addr)
 
@@ -324,6 +466,10 @@ class VHand:
     def printMenu1(self):
         print("Menu Options: conn , ")
         self.initHand()
+
+
+    def sendLogin(self):
+        self.send()
 
 if __name__ == '__main__':
     vtab = VHand("127.0.0.1")

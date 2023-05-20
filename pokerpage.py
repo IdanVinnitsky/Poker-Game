@@ -1,8 +1,13 @@
 import tkinter as tk
+from tkinter.constants import BOTH, TOP, RAISED
 
 from HandAct import HandAct
+from ProtocolAct import ProtocolAct
 from card import *
 import os
+
+from gameprotocol import GameProtocol
+from player import Player
 from virtualHand import VHand
 from tkinter import messagebox
 from PIL import Image
@@ -33,6 +38,7 @@ def create_card_dict():
 class PokerScreen(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
+
         self.root = parent
         self.vhand = VHand("127.0.0.1")
 
@@ -42,6 +48,14 @@ class PokerScreen(tk.Frame):
         self.canvas = tk.Canvas(self, width=900, height=500)
         self.canvas.pack(fill="both", expand=True)
         self.player_answer = None
+
+        self.menubar = None
+        self.gameMenu = None
+        self.helpmenu = None
+
+        self.login_button = None
+        self.start_button = None
+        self.exit_button = None
 
         try:
             self.photo = tk.PhotoImage(file="assets/pokerscreen.png")
@@ -55,7 +69,6 @@ class PokerScreen(tk.Frame):
             self.card3_flop = None
             self.card4_flop = None
             self.card5_flop = None
-
         except tk.TclError as e:
             print("Error loading image:", str(e))
             self.photo = None
@@ -63,6 +76,7 @@ class PokerScreen(tk.Frame):
     def button_clicked(self, act: str):
         print("Button clicked!")
         self.player_answer = HandAct(act)
+        self.vhand.send_player_response(HandAct(act))
 
     def get_vhand(self):
         return self.vhand
@@ -260,16 +274,101 @@ class PokerScreen(tk.Frame):
                 self.show_card4_flop()
                 self.show_card5_flop()
 
+    def createMenu(self):
+
+        self.login_button = tk.Button(self.root, text="Login", command=lambda: self.board_button_clicked("Login"),
+                                    width=10, height=2)
+        self.start_button = tk.Button(self.root, text="Start Game", command=lambda: self.board_button_clicked("StartGame"),
+                                    width=10, height=2)
+        self.exit_button = tk.Button(self.root, text="Exit Game", command=lambda: self.board_button_clicked("Exit"),
+                                    width=10, height=2)
+
+        x = 1
+        y = 1
+        self.login_button.place(x=x, y=y)
+
+        x = 150
+        y = 1
+        self.start_button.place(x=x, y=y)
+
+        x = 300
+        y = 1
+        self.exit_button.place(x=x, y=y)
+
+    def board_button_clicked(self, act:str):
+        if act == 'Login':
+            self.loginScreen()
+            # self.vhand.login()
+        elif act == 'StartGame':
+            self.vhand.startGame()
+        elif act == 'Exit':
+            self.vhand.exitGame()
+        else:
+            print("Wrong Action:",act)
+
+    def loginScreen(self):
+        # Create a Toplevel window
+        top = tk.Toplevel(self.root)
+        top.geometry("550x250")
+
+        # Create an Entry Widget in the Toplevel window
+        # tk.Label(top, text="UserName")
+        label = tk.Label(top, text="UserName")
+        label.pack()
+        entry1 = tk.Entry(top, width=25)
+        entry1.pack()
+        label1 = tk.Label(top, text="Password")
+        label1.pack()
+        tk.Label(top, text="Password")
+        entry2 = tk.Entry(top, width=25)
+        entry2.pack()
+
+        # Create a Button to print something in the Entry widget
+        tk.Button(top, text="Login", command=lambda: self.loginScreenAct(entry1,entry2)).pack(pady=5, side=TOP)
+        # Create a Button Widget in the Toplevel Window
+        button = tk.Button(top, text="Cancel", command=lambda: self.close_win(top))
+        button.pack(pady=5, side=TOP)
+
+    def close_win(self,top):
+        top.destroy()
+
+    def loginScreenAct(self,e1,e2):
+        print("Val", e1.get())
+        print("Val", e2.get())
+        self.login(e1.get(), e2.get())
+
+
+    def login(self, userName: str, paswword: str ):
+        player = Player(-1)
+        player.name = userName
+        player.password = paswword
+
+        self.vhand.player = player
+
+        pr = GameProtocol()
+        send_msg = pr.create_message(ProtocolAct.LOGIN, player)
+        self.vhand.send(send_msg)
+
+    def connectGame(self):
+        pass
+
+    def about(self):
+        pass
+
+    def exit(self):
+        pass
+
+
 def main():
     root = tk.Tk()
-    root.geometry("900x500")
+    root.geometry("1200x700")
 
     page = PokerScreen(root)
+    page.createMenu()
     page.pack(fill="both", expand=True)
 
     vhand = page.get_vhand()
     vhand.initUIHand(page)
-
 
     root.mainloop()
 

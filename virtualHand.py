@@ -56,6 +56,8 @@ class VHand:
             except socket.error as e:
                 print(str(e))
 
+
+
     def init_hand_game(self):
         self.conncting()
 
@@ -129,6 +131,8 @@ class VHand:
                     self.in_game_protocol.from_message(message)
 
                     print("Receive data:", message)
+                    if self.in_game_protocol.protocolAct == ProtocolAct.MESSAGE:
+                        self.in_game_protocol.message.startswith("ERROR:")
 
                     if self.in_game_protocol.protocolAct == ProtocolAct.GAME:
                         if self.in_game_protocol.game_status == GameStatus.STARTED:
@@ -216,7 +220,7 @@ class VHand:
         except Exception as e:
             print(e)
 
-    def  send_player_response(self, act: HandAct):
+    def  send_player_response(self, act: HandAct, val: str):
         print("Player Action", act)
         player = self.in_game_protocol.your_hand
 
@@ -228,6 +232,7 @@ class VHand:
 
         if player.responseAct == HandAct.RAISE:
             print("RAISE")
+            player.bid = int(val)
             # new_bet = self.printRaiseMenu(self.in_game_protocol)
             # show message
             # player.bid = new_bet
@@ -470,6 +475,22 @@ class VHand:
 
     def sendLogin(self):
         self.send()
+
+    def receiveMessage(self):
+        is_ok = False
+        pr = GameProtocol()
+        while True:
+            try:
+                message: str = pickle.loads(self.client_sock.recv(self.BUFFER_SIZE))
+                pr.from_message(message)
+
+                print("Receive data:", message)
+                if pr.protocolAct == ProtocolAct.MESSAGE:
+                    is_ok =  pr.message.startswith("INFO")
+                return(is_ok, pr.message)
+            except Exception as e:
+                print(e)
+
 
 if __name__ == '__main__':
     vtab = VHand("127.0.0.1")

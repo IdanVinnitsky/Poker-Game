@@ -91,9 +91,9 @@ class VTable:
             pr = GameProtocol()
             pr.from_message(msg)
             if pr.protocolAct == ProtocolAct.LOGIN:
-                start_new_thread(self.client_login, (handNum, pr))
-            elif pr.protocolAct == ProtocolAct.SIGNUP:
-                start_new_thread(self.client_signup, (handNum, pr))
+                start_new_thread(self.client_login, (handNum, pr, connection))
+            elif pr.protocolAct == ProtocolAct.SIGNIN:
+                start_new_thread(self.client_signup, (handNum, pr, connection))
             elif pr.protocolAct == ProtocolAct.REQUEST_START:
                 start_new_thread(self.client_request_game, (handNum, pr))
             elif pr.protocolAct == ProtocolAct.GAME:
@@ -212,18 +212,35 @@ class VTable:
         # self.lock.release()
 
 
-    def client_login(self, handNum, pr: GameProtocol):
+    def client_login(self, handNum, pr: GameProtocol, connection):
         print("client_login")
-        self.client_signup(handNum, pr)
+        # self.client_signup(handNum, pr)
         playerId = self.accountsRep.login(pr.your_hand)
-        pr.your_hand.id = handNum
-        self.game.players[str(handNum)] = pr.your_hand
-        print(" Set playerId:", playerId)
+        if playerId == 1:
+            pr1 = GameProtocol()
+            message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "ERROR : Player doesn't exist" )
+            connection.sendall(pickle.dumps(message))
+        else:
+            pr1 = GameProtocol()
+            message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "Info : Player exists")
+            connection.sendall(pickle.dumps(message))
+
+            pr.your_hand.id = handNum
+            self.game.players[str(handNum)] = pr.your_hand
+            print(" Set playerId:", playerId)
 
 
-    def client_signup(self, handNum, pr: GameProtocol):
-        print("client_signup")
-        self.accountsRep.signup(pr.your_hand)
+    def client_signup(self, handNum, pr: GameProtocol, connection):
+        is_signup = self.accountsRep.signup(pr.your_hand)
+
+        if is_signup == False:
+            pr1 = GameProtocol()
+            message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "ERROR : Player can't be created")
+            connection.sendall(pickle.dumps(message))
+        else:
+            pr1 = GameProtocol()
+            message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "Info : Player created")
+            connection.sendall(pickle.dumps(message))
 
     def myfunc1(self):
         print("Hello my name is " + self.name)

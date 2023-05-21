@@ -31,15 +31,17 @@ class AccountsRepository:
             result = cursor.fetchall()
             if len(result) > 0:
                 print('Error:Player exist with same name')
-                return
+                return True
 
             query = "INSERT INTO AccountDB(name, password) VALUES(?,?)"
             cursor.execute(query, (player.name, player.password))
             connection.commit()
             connection.close()
             print('Success : New Account Created, Successfully')
+            return True
         except Exception as es:
             print('Error:Something went wrong try again', es)
+            return False
 
     def login(self, player: Player):
         conn = sqlite3.connect(self.db_file)

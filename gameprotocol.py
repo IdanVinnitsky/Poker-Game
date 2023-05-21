@@ -52,6 +52,7 @@ class GameProtocol:
         self.your_hand: Player
         self.players: List[Player] = []
         self.flop: List[Card] = []
+        self.message = ''
 
     def get_players(self):
         return self.players
@@ -66,7 +67,7 @@ class GameProtocol:
         your_hand: str = self.get_your_hand_str(player)
         players: str = self.get_players_str(game)
         flop:  str = self.get_flop_str(game)
-        mass = str(self.protocolAct.value) + "|" +  str(self.game_status.value) + "|" + str(self.round_status.value) + \
+        mass = str(self.protocolAct.value) + "|" + "|" + str(self.game_status.value) + "|" + str(self.round_status.value) + \
                "|" + str(roundNum) + "|" + \
                str(roundBid) + "|" + str(game.jackpot) + "|" + your_hand + "|" + players + "|" + flop
         size = len(mass)
@@ -75,7 +76,16 @@ class GameProtocol:
     def create_message(self, protocolAct, player: Player):
         self.protocolAct = protocolAct
         your_hand = self.get_your_hand_str(player)
-        msg = str(self.protocolAct.value) + "|" + str(self.game_status.value) + "|" + str(self.round_status.value) + \
+        msg = str(self.protocolAct.value) + "|" + "|" + str(self.game_status.value) + "|" + str(self.round_status.value) + \
+              "|0|0|0|" + your_hand
+        size = len(msg)
+        return str(size) + "|" + msg + "$"
+
+    def create_message3(self, protocolAct, player: Player, message: str):
+        self.protocolAct = protocolAct
+        your_hand = self.get_your_hand_str(player)
+        msg = str(self.protocolAct.value) + "|" + message + "|" + str(self.game_status.value) + "|" + str(
+            self.round_status.value) + \
               "|0|0|0|" + your_hand
         size = len(msg)
         return str(size) + "|" + msg + "$"
@@ -83,7 +93,7 @@ class GameProtocol:
     def create_message2(self, protocolAct, game_status: GameStatus,  player: Player):
         self.protocolAct = protocolAct
         your_hand = self.get_your_hand_str(player)
-        msg = str(self.protocolAct.value) + "|" + str(game_status.value) + "|" + str(self.round_status.value) + \
+        msg = str(self.protocolAct.value) + "|" + "|" + str(game_status.value) + "|" + str(self.round_status.value) + \
               "|0|0|0|" + your_hand
         size = len(msg)
         return str(size) + "|" + msg + "$"
@@ -174,16 +184,17 @@ class GameProtocol:
         parts = msg.split('|')
         self.size = int(parts[0])
         self.protocolAct = ProtocolAct(parts[1])
-        self.game_status = GameStatus(parts[2])
-        self.round_status = HandAct(parts[3])
-        self.round_num = int(parts[4])
-        self.round_bid = int(parts[5])
-        self.jackpot = int(parts[6])
-        self.your_hand = self.parse_player(parts[7])
-        if len(parts) == 8:
+        self.message = parts[2]
+        self.game_status = GameStatus(parts[3])
+        self.round_status = HandAct(parts[4])
+        self.round_num = int(parts[5])
+        self.round_bid = int(parts[6])
+        self.jackpot = int(parts[7])
+        self.your_hand = self.parse_player(parts[8])
+        if len(parts) == 9:
             return
-        self.parse_players(parts[8])
-        self.parse_flop(parts[9])
+        self.parse_players(parts[10])
+        self.parse_flop(parts[11])
         # print("parts :", parts[5])
 
 

@@ -2,9 +2,9 @@ from enum import Enum, auto, unique
 
 
 class Suit(Enum):
-    HEARTS = "HEARTS"
-    DIAMONDS = "DIAMONDS"
     CLUBS = "CLUBS"
+    DIAMONDS = "DIAMONDS"
+    HEARTS = "HEARTS"
     SPADES = "SPADES"
 
 

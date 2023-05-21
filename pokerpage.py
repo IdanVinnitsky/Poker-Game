@@ -60,6 +60,8 @@ class PokerScreen(tk.Frame):
         self.start_button = None
         self.exit_button = None
 
+        self.pr = None
+
         try:
             self.photo = tk.PhotoImage(file="assets/pokerscreen.png")
             self.canvas.create_image(0, 0, image=self.photo, anchor="nw")
@@ -79,6 +81,7 @@ class PokerScreen(tk.Frame):
     def button_clicked(self, act: str):
         print("Button clicked!")
         self.player_answer = HandAct(act)
+        val = ''
         if self.player_answer == HandAct.RAISE:
             val = askstring('Raise', 'What is your raise ?')
         self.vhand.send_player_response(HandAct(act), val)
@@ -264,11 +267,20 @@ class PokerScreen(tk.Frame):
     def set_player_answer(self, val):
         self.player_answer = val
 
+    def update_label(self, label):
+        self.canvas.itemconfig(label, text="Updated text")
+
+    def labels(self):
+        # Create a label with specified width and height
+        label = self.canvas.create_text(20, 450, text=self.pr.get_round_status(), width=10, height=2)
+
+        self.root.after(2000, self.update_label(label))
 
     def update_screen(self, num):
         self.show_my_cards(self.vhand.player.cards[0], self.vhand.player.cards[1])
         self.buttons_1()
 
+        # self.labels()
         self.show_other_players(num)
 
         if self.vhand.flop != None:
@@ -378,31 +390,31 @@ class PokerScreen(tk.Frame):
         print("Val", e1.get())
         print("Val", e2.get())
         self.login(e1.get(), e2.get())
-        status, message = self.vhand.receiveMessage()
-        if status == True:
-            messagebox.showinfo(message, "Information")
-        else:
-            messagebox.showwarning(message, "Warning")
+        # status, message = self.vhand.receiveMessage()
+        # if status == True:
+        #     messagebox.showinfo("Information", message)
+        # else:
+        #     messagebox.showwarning(message, "Warning")
 
     def signScreenAct(self,e1,e2):
         print("Val", e1.get())
         print("Val", e2.get())
         self.sigin(e1.get(), e2.get())
-        status, message = self.vhand.receiveMessage()
-        if status == True:
-            messagebox.showinfo(message, "Information")
-        else:
-            messagebox.showwarning(message, "Warning")
+        # status, message = self.vhand.receiveMessage()
+        # if status == True:
+        #     messagebox.showinfo("Information", message)
+        # else:
+        #     messagebox.showwarning("Warning", message)
 
-    def login(self, userName: str, paswword: str ):
+    def login(self, userName: str, paswword: str):
         player = Player(-1)
         player.name = userName
         player.password = paswword
 
         self.vhand.player = player
 
-        pr = GameProtocol()
-        send_msg = pr.create_message(ProtocolAct.LOGIN, player)
+        self.pr = GameProtocol()
+        send_msg = self.pr.create_message(ProtocolAct.LOGIN, player)
         self.vhand.send(send_msg)
 
     def sigin(self, userName: str, paswword: str):
@@ -437,6 +449,7 @@ def main():
 
     vhand = page.get_vhand()
     vhand.initUIHand(page)
+
 
     root.mainloop()
 

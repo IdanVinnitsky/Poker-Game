@@ -54,6 +54,9 @@ class GameProtocol:
         self.flop: List[Card] = []
         self.message = ''
 
+    def get_round_status(self):
+        return self.round_status
+
     def get_players(self):
         return self.players
 
@@ -193,8 +196,8 @@ class GameProtocol:
         self.your_hand = self.parse_player(parts[8])
         if len(parts) == 9:
             return
-        self.parse_players(parts[10])
-        self.parse_flop(parts[11])
+        self.parse_players(parts[9])
+        self.parse_flop(parts[10])
         # print("parts :", parts[5])
 
 

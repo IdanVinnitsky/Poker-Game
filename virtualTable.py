@@ -8,17 +8,45 @@ from AccountsRepository import AccountsRepository
 from EncryptionTool import EncryptionTool
 from HandAct import HandAct
 from ProtocolAct import ProtocolAct
-from player import Player
 from gameprotocol import GameProtocol
+from player import Player
+
 from table import Table
 from deck import Deck
 from game import Game
 from gamemsg import Data
 import time
+from hands import Hand
 
-from hands import *
+
+def determine_winner(player1_hand, player2_hand):
+    if player1_hand == player2_hand:
+        return player1_hand
+
+    player1_rank = player1_hand[0]  # HandRank of player 1
+    player1_cards = player1_hand[1]  # Cards of player 1
+    player2_rank = player2_hand[0]  # HandRank of player 2
+    player2_cards = player2_hand[1]  # Cards of player 2
+
+    # Compare the hand ranks
+    if player1_rank.value > player2_rank.value:
+        return player1_hand
+    elif player1_rank.value < player2_rank.value:
+        return player2_hand
+    else:
+        # Hand ranks are the same, compare the cards
+        for i in range(len(player1_cards)):
+            if player1_cards[i].getValue().value > player2_cards[i].getValue().value:
+                return player1_hand
+            elif player1_cards[i].getValue().value < player2_cards[i].getValue().value:
+                return player2_hand
+
+    # If no winner is determined, it's a tie
+    #return "It's a tie!"
+
 
 class VTable:
+
 
     def __init__(self, name, age):
         self.lock = threading.Lock()
@@ -28,29 +56,31 @@ class VTable:
         self.age = age
         self.handNum: int = 1
         self.handSocks: dict[str, socket] = {}
-        deck = Deck()
-        self.game = Game(1, deck)
+        self.deck = Deck()
+        self.game = Game(1, self.deck)
         self.BUFFER_SIZE = 4096
         self.enc_tool: EncryptionTool = EncryptionTool()
         self.accountsRep = AccountsRepository()
         self.request_players = []
 
     def the_winner(self):
-        dic_players = self.game.get_players()
-        dic_flops = {}
-        flop = self.game.get_flop()
-        for key, value in dic_players:  # key = 0,1,2,..value = Player
-                dic_flops[key] = list(value.get_cards()) + flop
+        dict_hands = {}
+        flop = self.game.flop
+        for key, pl in self.game.players.items():
+            dict_hands[key] = Hand(flop + list(pl.get_cards()))
+        dict_ranks = {}
+        for key, hand in dict_hands.items():
+            dict_ranks[key] = hand.get_hand_rank()
 
-        dic_hands = {}
-        for key, value in dic_hands:  # value = flop = list of cards
-            dic_hands[key] = Hand(value)
-        dic_rank = {}
-        for key, value in dic_hands:  # value = Hand
-            dic_hands[key] = value.getHighestRank()
+        winner = None
+        for key in dict_ranks.keys():
+            if int(key) < len(dict_ranks.keys()) - 1:
+                winner = determine_winner(dict_ranks[key], dict_ranks[str(int(key) + 1)])
 
-        list = dic_rank.values()
-        max_hand = max(list)
+        id_winner = list(dict_ranks.keys())[list(dict_ranks.values()).index(winner)]
+
+        return id_winner
+
 
     def start_server(self):
         print("Hello my name is " + self.name)
@@ -97,7 +127,10 @@ class VTable:
             elif pr.protocolAct == ProtocolAct.REQUEST_START:
                 start_new_thread(self.client_request_game, (handNum, pr))
             elif pr.protocolAct == ProtocolAct.GAME:
-                start_new_thread(self.update_running_game, (handNum, pr))
+                start_new_thread(self.update_running_game,(handNum, pr))
+                if self.game.get_round() == 4:
+                    print(f"the winner issss: {self.the_winner()}")
+
             else:
                 print("Error request:", pr.protocolAct)
             # msconnection.sendall(str.encode(reply)):
@@ -203,7 +236,7 @@ class VTable:
         pr.your_hand.id = handNum
         self.game.players[str(handNum)] = pr.your_hand
         if len(self.request_players) == 2:
-            start_new_thread(self.running_game)
+            start_new_thread(self.running_game, ())
 
     def update_running_game(self, handNum, pr: GameProtocol):
         print("update_running_game")
@@ -216,13 +249,13 @@ class VTable:
         print("client_login")
         # self.client_signup(handNum, pr)
         playerId = self.accountsRep.login(pr.your_hand)
-        if playerId == 1:
+        if playerId == -1:
             pr1 = GameProtocol()
             message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "ERROR : Player doesn't exist" )
             connection.sendall(pickle.dumps(message))
         else:
             pr1 = GameProtocol()
-            message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "Info : Player exists")
+            message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "INFO : Player exists")
             connection.sendall(pickle.dumps(message))
 
             pr.your_hand.id = handNum
@@ -304,7 +337,7 @@ class VTable:
             sock.send(pickle.dumps(msg))
 
         # 3 cards; +1; +1
-        for roundNum in range(1, 5):
+        for roundNum in range(1,5):
             print(">>>>>>>>>>>>>>>>>>>>> ",)
             print("Round ",roundNum)
             self.game.round = roundNum
@@ -372,6 +405,9 @@ class VTable:
                         self.game.add_player(pr.your_hand)
 
                         break
+
+            if roundNum == 4:
+                print(f"the winner issss: {self.the_winner()}")
 
 
 

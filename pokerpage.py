@@ -11,6 +11,7 @@ from gameprotocol import GameProtocol
 from player import Player
 from virtualHand import VHand
 from tkinter import messagebox
+from tkinter import simpledialog
 from PIL import Image
 
 from PIL import ImageTk, Image
@@ -79,20 +80,27 @@ class PokerScreen(tk.Frame):
 
     def button_clicked(self, act: str):
         print("Button clicked!")
-        self.player_answer = HandAct(act)
-        if self.player_answer == HandAct.RAISE:
-            val = askstring('Raise', 'What is your raise ?')
-        self.vhand.send_player_response(HandAct(act), val)
+        player_answer = HandAct(act)
+        val = '0'
+        if player_answer == HandAct.RAISE:
+            val = simpledialog.askstring("Input Box", "How much money:", parent=self.root)
+        self.vhand.send_player_response(player_answer, val)
 
     def get_vhand(self):
         return self.vhand
+
+    def display_name_and_money(self, player):
+        self.canvas.create_text(540, 362, text=str(player.get_name()), font=("Arial", 10))
+        self.canvas.create_text(540, 382, text=str(player.get_money()), font=("Arial", 10))
+        self.canvas.create_text(540, 392, text=str(player.get_respone()), font=("Arial", 10))
 
     def show_my_cards(self, card1, card2):
         self.card1_img = tk.PhotoImage(file="cards/" + self.image_dict[card1])
         self.card2_img = tk.PhotoImage(file="cards/" + self.image_dict[card2])
 
-        self.canvas.create_image(440, 360, image=self.card1_img, anchor="nw")
-        self.canvas.create_image(366, 360, image=self.card2_img, anchor="nw")
+        self.canvas.create_image(366, 360, image=self.card1_img, anchor="nw")
+        self.canvas.create_image(440, 360, image=self.card2_img, anchor="nw")
+
 
     def set_first_flop(self, flop):
         self.card1_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[0]])
@@ -148,7 +156,8 @@ class PokerScreen(tk.Frame):
 
     def buttons_1(self):
         # Create the button
-        self.bet_button = tk.Button(self.root, text="BET", command=lambda: self.button_clicked("bet"),
+        self.bet_button = tk.Button(self.root, text="BET",
+                                    command=lambda: self.button_clicked("bet"),
                                     width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -157,7 +166,8 @@ class PokerScreen(tk.Frame):
         self.bet_button.place(x=x, y=y)
 
         # Create the button
-        self.check_button = tk.Button(self.root, text="CHECK", command=lambda: self.button_clicked("check"),
+        self.check_button = tk.Button(self.root, text="CHECK",
+                                      command=lambda: self.button_clicked("check"),
                                       width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -166,7 +176,8 @@ class PokerScreen(tk.Frame):
         self.check_button.place(x=x, y=y)
 
         # Create the button
-        self.fold_button = tk.Button(self.root, text="FOLD", command=lambda: self.button_clicked("fold"),
+        self.fold_button = tk.Button(self.root, text="FOLD",
+                                     command=lambda: self.button_clicked("fold"),
                                      width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -176,16 +187,8 @@ class PokerScreen(tk.Frame):
 
     def buttons_2(self):
         # Create the button
-        self.call_button = tk.Button(self.root, text="CALL & RAISE", command=self.button_clicked("call"),
-                                          width=10, height=2)
-
-        # Place the button at the specified coordinates
-        x = 580
-        y = 450
-        self.call_button.place(x=x, y=y)
-
-        # Create the button
-        self.call_button = tk.Button(self.root, text="CALL", command=self.button_clicked("call"),
+        self.call_button = tk.Button(self.root, text="CALL",
+                                     command=self.button_clicked("call"),
                                      width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -194,7 +197,8 @@ class PokerScreen(tk.Frame):
         self.call_button.place(x=x, y=y)
 
         # Create the button
-        self.fold_button = tk.Button(self.root, text="FOLD", command=self.button_clicked("fold"),
+        self.fold_button = tk.Button(self.root, text="FOLD",
+                                     command=self.button_clicked("fold"),
                                      width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -202,8 +206,9 @@ class PokerScreen(tk.Frame):
         y = 450
         self.fold_button.place(x=x, y=y)
 
-        self.raise_button = tk.Button(self.root, text="CALL & RAISE", command=self.button_clicked("raise"),
-                                     width=10, height=2)
+        self.raise_button = tk.Button(self.root, text="RAISE",
+                                      command=self.button_clicked("raise"),
+                                      width=10, height=2)
 
         # Place the button at the specified coordinates
         x = 450
@@ -231,7 +236,8 @@ class PokerScreen(tk.Frame):
 
 
 
-    def show_other_players(self, num):
+    def show_other_players(self, other_players):
+        num = len(other_players)
         if num >= 1:
             self.canvas.create_image(62, 306, image=self.back_image, anchor="nw")
             self.canvas.create_image(136, 306, image=self.back_image, anchor="nw")
@@ -274,12 +280,18 @@ class PokerScreen(tk.Frame):
 
         self.root.after(2000, self.update_label(label))
 
-    def update_screen(self, num):
+    def update_screen(self):
         self.show_my_cards(self.vhand.player.cards[0], self.vhand.player.cards[1])
-        self.buttons_1()
+        self.display_name_and_money(self.vhand.player)
+
+        if self.vhand.in_game_protocol.round_status == HandAct.BET or \
+                self.vhand.in_game_protocol.round_status == HandAct.RAISE:
+            self.buttons_2()
+        else:
+            self.buttons_1()
 
         # self.labels()
-        self.show_other_players(num)
+        self.show_other_players(self.vhand.otherHands)
 
         if self.vhand.flop != None:
             if len(self.vhand.flop) == 3:
@@ -299,13 +311,17 @@ class PokerScreen(tk.Frame):
 
     def createMenu(self):
 
-        self.signup_button = tk.Button(self.root, text="Signup", command=lambda: self.board_button_clicked("Signup"),
+        self.signup_button = tk.Button(self.root, text="Signup",
+                                       command=lambda: self.board_button_clicked("Signup"),
                                       width=10, height=2)
-        self.login_button = tk.Button(self.root, text="Login", command=lambda: self.board_button_clicked("Login"),
+        self.login_button = tk.Button(self.root, text="Login",
+                                      command=lambda: self.board_button_clicked("Login"),
                                     width=10, height=2)
-        self.start_button = tk.Button(self.root, text="Start Game", command=lambda: self.board_button_clicked("StartGame"),
+        self.start_button = tk.Button(self.root, text="Start Game",
+                                      command=lambda: self.board_button_clicked("StartGame"),
                                     width=10, height=2)
-        self.exit_button = tk.Button(self.root, text="Exit Game", command=lambda: self.board_button_clicked("Exit"),
+        self.exit_button = tk.Button(self.root, text="Exit Game",
+                                     command=lambda: self.board_button_clicked("Exit"),
                                     width=10, height=2)
 
         x = 1
@@ -359,26 +375,30 @@ class PokerScreen(tk.Frame):
         button.pack(pady=5, side=TOP)
 
     def loginScreen(self):
+        self.root.overrideredirect(1)
+        self.root.withdraw()
         # Create a Toplevel window
-        top = tk.Toplevel(self.root)
-        top.geometry("550x250")
+        self.topW = tk.Toplevel(self.root)
+        self.topW.geometry("550x250")
 
         # Create an Entry Widget in the Toplevel window
         # tk.Label(top, text="UserName")
-        label = tk.Label(top, text="UserName")
+        label = tk.Label(self.topW, text="UserName")
         label.pack()
-        entry1 = tk.Entry(top, width=25)
+        entry1 = tk.Entry(self.topW, width=25)
         entry1.pack()
-        label1 = tk.Label(top, text="Password")
+        label1 = tk.Label(self.topW, text="Password")
         label1.pack()
-        tk.Label(top, text="Password")
-        entry2 = tk.Entry(top, width=25)
+        tk.Label(self.topW, text="Password")
+        entry2 = tk.Entry(self.topW, width=25)
         entry2.pack()
 
         # Create a Button to print something in the Entry widget
-        tk.Button(top, text="Login", command=lambda: self.loginScreenAct(entry1,entry2)).pack(pady=5, side=TOP)
-        # Create a Button Widget in the Toplevel Window
-        button = tk.Button(top, text="Cancel", command=lambda: self.close_win(top))
+        tk.Button(self.topW, text="Login", command=lambda: self.login_screen_action(entry1, entry2)).pack(pady=5, side=TOP)
+        tk.Button(self.topW, text="Signup", command=lambda: self.signup_screen_action(entry1, entry2)).pack(pady=5,
+                                                                                                          side=TOP)
+
+        button = tk.Button(self.topW, text="Cancel", command=lambda: self.close_win(self.root))
         button.pack(pady=5, side=TOP)
 
     def close_win(self,top):
@@ -394,14 +414,15 @@ class PokerScreen(tk.Frame):
         if status:
             messagebox.showinfo("Information", message)
             self.topW.withdraw()
+            self.root.overrideredirect(0)
             self.root.deiconify()
         else:
             messagebox.showwarning("Warning", message)
 
 
     def signup_screen_action(self, e1, e2):
-        self.root.deiconify()
-        self.topW.withdraw()
+        # self.root.deiconify()
+        # self.topW.withdraw()
         print("Val", e1.get())
         print("Val", e2.get())
         self.sigin(e1.get(), e2.get())
@@ -441,7 +462,7 @@ class PokerScreen(tk.Frame):
         self.vhand.player = player
 
         pr = GameProtocol()
-        send_msg = pr.create_message(ProtocolAct.SIGNIN, player)
+        send_msg = pr.create_message(ProtocolAct.SIGNUP, player)
         self.vhand.send(send_msg)
 
 
@@ -457,7 +478,7 @@ class PokerScreen(tk.Frame):
 
 def main():
     root = tk.Tk()
-    root.geometry("1200x700")
+    root.geometry("900x500")
 
     page = PokerScreen(root)
     page.createMenu()

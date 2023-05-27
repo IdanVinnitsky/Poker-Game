@@ -101,12 +101,12 @@ class GameProtocol:
         size = len(msg)
         return str(size) + "|" + msg + "$"
 
-
     def get_players_str(self, game: Game):
         players = game.get_players()
         res = ''
         for pl in players:
-            res += str(pl.id) + "," + str(pl.name) +  "," + str(pl.password) + "," + str(pl.responseAct.value) + "," + str(pl.bid)
+            res += str(pl.id) + "," + str(pl.name) + "," + str(pl.money) + "," +\
+                   str(pl.password) + "," + str(pl.responseAct.value) + "," + str(pl.bid)
             cards = pl.get_cards()
             if cards == None:
                 res += "," + "," + "," + "," + ",;"
@@ -121,12 +121,12 @@ class GameProtocol:
     def get_your_hand_str(self, player):
         cards = player.get_cards()
         if cards == None:
-            return str(player.id) + "," + str(player.name)  + "," + str(player.password) + "," + str(player.responseAct.value) + "," + str(player.bid) + "," + "," + \
+            return str(player.id) + "," + str(player.name) + "," + str(player.money) + "," + str(player.password) + "," + str(player.responseAct.value) + "," + str(player.bid) + "," + "," + \
                  "," + "," + ","
         # dictionary = dict_of_cards()
         # card1 = dictionary[cards[0]]
         # card2 = dictionary[cards[1]]
-        return str(player.id) + "," + str(player.name) + "," + str(player.password) + "," + str(player.responseAct.value) + "," + str(player.bid) + "," + \
+        return str(player.id) + "," + str(player.name) + "," + str(player.money) + "," + str(player.password) + "," + str(player.responseAct.value) + "," + str(player.bid) + "," + \
             str(cards[0].getValue().value) + "," + str(cards[0].getSuit().value) + "," + str(cards[1].getValue().value) + \
             "," + str(cards[1].getSuit().value)
 
@@ -146,12 +146,13 @@ class GameProtocol:
         parts = data.split(',')
         player = Player(parts[0])
         player.name = parts[1]
-        player.password = parts[2]
-        player.responseAct = HandAct(parts[3])
-        player.bid = int(parts[4])
-        if len(parts[5]) > 0:
-            card1: Card = Card(CardRank(int(parts[5])), Suit(parts[6]))
-            card2: Card = Card(CardRank(int(parts[7])), Suit(parts[8]))
+        player.money = int(parts[2])
+        player.password = parts[3]
+        player.responseAct = HandAct(parts[4])
+        player.bid = int(parts[5])
+        if len(parts[6]) > 0:
+            card1: Card = Card(CardRank(int(parts[6])), Suit(parts[7]))
+            card2: Card = Card(CardRank(int(parts[8])), Suit(parts[9]))
             player.set_cards(card1, card2)
         return player
 

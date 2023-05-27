@@ -8,6 +8,7 @@ from AccountsRepository import AccountsRepository
 from EncryptionTool import EncryptionTool
 from HandAct import HandAct
 from ProtocolAct import ProtocolAct
+from hands import Hand
 from player import Player
 from gameprotocol import GameProtocol
 from table import Table
@@ -16,7 +17,31 @@ from game import Game
 from gamemsg import Data
 import time
 
-from hands import *
+def determine_winner(player1_hand, player2_hand):
+    if player1_hand == player2_hand:
+        return player1_hand
+
+    player1_rank = player1_hand[0]  # HandRank of player 1
+    player1_cards = player1_hand[1]  # Cards of player 1
+    player2_rank = player2_hand[0]  # HandRank of player 2
+    player2_cards = player2_hand[1]  # Cards of player 2
+
+    # Compare the hand ranks
+    if player1_rank.value > player2_rank.value:
+        return player1_hand
+    elif player1_rank.value < player2_rank.value:
+        return player2_hand
+    else:
+        # Hand ranks are the same, compare the cards
+        for i in range(len(player1_cards)):
+            if player1_cards[i].getValue().value > player2_cards[i].getValue().value:
+                return player1_hand
+            elif player1_cards[i].getValue().value < player2_cards[i].getValue().value:
+                return player2_hand
+
+    # If no winner is determined, it's a tie
+    #return "It's a tie!"
+
 
 class VTable:
 
@@ -34,6 +59,7 @@ class VTable:
         self.enc_tool: EncryptionTool = EncryptionTool()
         self.accountsRep = AccountsRepository()
         self.request_players = []
+
 
     def the_winner(self):
         dict_hands = {}
@@ -87,14 +113,14 @@ class VTable:
         connection.send(str.encode('You are now connected to the replay server... Type BYE to stop'))
         while True:
             data = connection.recv(self.BUFFER_SIZE)
-            msg = self.enc_tool.decrypt(data)
+            msg = self.enc_tool.decrypt_rsa(data)
             print("Receive from ", handNum)
             print("Received data ", msg)
             pr = GameProtocol()
             pr.from_message(msg)
             if pr.protocolAct == ProtocolAct.LOGIN:
                 start_new_thread(self.client_login, (handNum, pr, connection))
-            elif pr.protocolAct == ProtocolAct.SIGNIN:
+            elif pr.protocolAct == ProtocolAct.SIGNUP:
                 start_new_thread(self.client_signup, (handNum, pr, connection))
             elif pr.protocolAct == ProtocolAct.REQUEST_START:
                 start_new_thread(self.client_request_game, (handNum, pr))
@@ -192,12 +218,14 @@ class VTable:
                     self.game.jackpot += self.in_game_protocol.your_hand.bid
 
                 if self.in_game_protocol.your_hand.responseAct == HandAct.BET:
-                    self.game.jackpot += pr.your_hand.bid
+                    self.game.jackpot += self.in_game_protocol.your_hand.bid
                     self.game.round_status = HandAct.BET
                     self.game.round_bid = self.game.min_bid
 
                 self.game.add_player(received_player)
 
+        if roundNum == 4:
+            print(f"the winner issss: {self.the_winner()}")
         print("End running_game")
 
     def client_request_game(self, handNum, pr: GameProtocol):
@@ -370,13 +398,14 @@ class VTable:
 
                         break
 
-            if roundNum == 4:
-                print(f"the winner issss: {self.the_winner()}")
+
 
 
 
 
         # Send ALl START Game
+        if roundNum == 4:
+            print(f"the winner issss: {self.the_winner()}")
 
 
         print("END start_game")

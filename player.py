@@ -16,6 +16,17 @@ class Player:
         self.firstBid = True
         self.bid = 0
 
+
+
+    def get_name(self):
+        return str(self.name)
+
+    def get_money(self):
+        return str(self.name)
+
+    def get_respone(self):
+        return str(self.responseAct.value)
+
     def get_is_turn(self):
         return self.is_turn
 

@@ -10,6 +10,8 @@ class EncryptionTool:
         (self.public_key, self.private_key) = rsa.newkeys(1024)
         self.public_key_data = self.public_key.save_pkcs1()
 
+
+
     def myfunc(self):
         print("Hello my name is " + str(self.id))
         original_obj = {'name': 'Alice', 'age': 25}
@@ -25,7 +27,7 @@ class EncryptionTool:
 
 
 
-    def encrypt(self,obj):
+    def encrypt_rsa(self, obj):
 
         # print('public_key_data:', public_key_data)
         # Convert object to bytes using pickle
@@ -34,12 +36,15 @@ class EncryptionTool:
         encrypted_bytes = rsa.encrypt(obj_bytes, self.public_key)
         return encrypted_bytes
 
-    def decrypt(self,encrypted_bytes):
+    def decrypt_rsa(self, encrypted_bytes):
         # Decrypt bytes using RSA private key
         decrypted_bytes = rsa.decrypt(encrypted_bytes, self.private_key)
         # Convert bytes back to object using pickle
         obj = pickle.loads(decrypted_bytes)
         return obj
+
+
+
 
 
 if __name__ == '__main__':

@@ -18,6 +18,7 @@ import time
 
 from hands import *
 
+
 class VTable:
 
     def __init__(self, name, age):
@@ -40,7 +41,7 @@ class VTable:
         dic_flops = {}
         flop = self.game.get_flop()
         for key, value in dic_players:  # key = 0,1,2,..value = Player
-                dic_flops[key] = list(value.get_cards()) + flop
+            dic_flops[key] = list(value.get_cards()) + flop
 
         dic_hands = {}
         for key, value in dic_hands:  # value = flop = list of cards
@@ -80,19 +81,18 @@ class VTable:
 
         srv_sock.close()  # close the connection
 
-
     def client_handler(self, handNum, connection):
         connection.send(str.encode('You are now connected to the replay server... Type BYE to stop'))
         while True:
             data = connection.recv(self.BUFFER_SIZE)
-            msg = self.enc_tool.decrypt(data)
+            msg = self.enc_tool.decrypt_rsa(data)
             print("Receive from ", handNum)
             print("Received data ", msg)
             pr = GameProtocol()
             pr.from_message(msg)
             if pr.protocolAct == ProtocolAct.LOGIN:
                 start_new_thread(self.client_login, (handNum, pr, connection))
-            elif pr.protocolAct == ProtocolAct.SIGNIN:
+            elif pr.protocolAct == ProtocolAct.SIGNUP:
                 start_new_thread(self.client_signup, (handNum, pr, connection))
             elif pr.protocolAct == ProtocolAct.REQUEST_START:
                 start_new_thread(self.client_request_game, (handNum, pr))
@@ -110,8 +110,6 @@ class VTable:
 
         # for key, sock in self.handSocks.items():
         #     sock.send(pickle.dumps(gameMsg))
-
-
 
         for numHand, player in self.game.players.items():
             player.set_cards(self.game.get_card(), self.game.get_card())
@@ -157,13 +155,13 @@ class VTable:
                 sock.send(pickle.dumps(msg))
 
                 # while True:
-                    # print("Waiting for Response : HAND " + str(str(player.id)))
-                    # data = pickle.loads(sock.recv(self.BUFFER_SIZE))
-                    # data = sock.recv(self.BUFFER_SIZE)
-                    # msg = self.enc_tool.decrypt(data)
-                    # pr = GameProtocol()
-                    # pr.from_message(msg)
-                    # with self.lock:
+                # print("Waiting for Response : HAND " + str(str(player.id)))
+                # data = pickle.loads(sock.recv(self.BUFFER_SIZE))
+                # data = sock.recv(self.BUFFER_SIZE)
+                # msg = self.enc_tool.decrypt(data)
+                # pr = GameProtocol()
+                # pr.from_message(msg)
+                # with self.lock:
                 received_player: Player = None
                 while True:
                     # print("Waiting for client response....")
@@ -211,40 +209,33 @@ class VTable:
         self.hand_answers[str(handNum)] = pr.your_hand
         # self.lock.release()
 
-
     def client_login(self, handNum, pr: GameProtocol, connection):
         print("client_login")
         # self.client_signup(handNum, pr)
         playerId = self.accountsRep.login(pr.your_hand)
-        if playerId == 1:
+        if playerId == -1:
             pr1 = GameProtocol()
-            message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "ERROR : Player doesn't exist" )
+            message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "ERROR : Player doesn't exist")
             connection.sendall(pickle.dumps(message))
         else:
             pr1 = GameProtocol()
-            message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "Info : Player exists")
+            message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "INFO : Player exists")
             connection.sendall(pickle.dumps(message))
 
             pr.your_hand.id = handNum
             self.game.players[str(handNum)] = pr.your_hand
             print(" Set playerId:", playerId)
 
-
     def client_signup(self, handNum, pr: GameProtocol, connection):
-        is_signup = self.accountsRep.signup(pr.your_hand)
+        is_signup, msg = self.accountsRep.signup(pr.your_hand)
 
-        if is_signup == False:
-            pr1 = GameProtocol()
-            message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "ERROR : Player can't be created")
-            connection.sendall(pickle.dumps(message))
-        else:
-            pr1 = GameProtocol()
-            message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "Info : Player created")
-            connection.sendall(pickle.dumps(message))
+        pr1 = GameProtocol()
+        message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, msg)
+        connection.sendall(pickle.dumps(message))
+
 
     def myfunc1(self):
         print("Hello my name is " + self.name)
-
 
         # host = socket.gethostname()
         # port = 5000  # initiate port no above 1024
@@ -287,7 +278,6 @@ class VTable:
 
         conn.close()  # close the connection
 
-
     def start_game(self):
         print("START start_game")
         self.game.start_game()
@@ -305,8 +295,8 @@ class VTable:
 
         # 3 cards; +1; +1
         for roundNum in range(1, 5):
-            print(">>>>>>>>>>>>>>>>>>>>> ",)
-            print("Round ",roundNum)
+            print(">>>>>>>>>>>>>>>>>>>>> ", )
+            print("Round ", roundNum)
             self.game.round = roundNum
             if roundNum == 1:
                 self.game.round_bid = 5
@@ -348,7 +338,7 @@ class VTable:
                     if roundNum == 1:
                         self.game.jackpot += pr.your_hand.bid
 
-                    print("player.response:" , pr.your_hand.responseAct)
+                    print("player.response:", pr.your_hand.responseAct)
                     if pr.your_hand.responseAct != None:
                         current_player = self.game.get_player(pr.your_hand.id)
                         current_player.responseAct = pr.your_hand.responseAct
@@ -373,11 +363,7 @@ class VTable:
 
                         break
 
-
-
-
         # Send ALl START Game
-
 
         print("END start_game")
 

@@ -8,7 +8,6 @@ class AccountsRepository:
     def __init__(self, db_file=None):
         self.db_file = 'AccountSystem.db'
 
-
     def create_table(self):
         connection = sqlite3.connect(self.db_file)
         cur = connection.cursor()
@@ -17,10 +16,9 @@ class AccountsRepository:
         connection.commit()
         connection.close()
 
-
     def signup(self, player: Player):
         if player.name == '' or player.password == '':
-            print("Error: values cant be empty")
+            return False, "ERROR: values cant be empty"
 
         try:
             connection = sqlite3.connect(self.db_file)
@@ -30,18 +28,17 @@ class AccountsRepository:
             cursor.execute(find_player, (player.name,))
             result = cursor.fetchall()
             if len(result) > 0:
-                print('Error:Player exist with same name')
-                return True
+                return False, 'ERROR: Player exist with same name'
 
             query = "INSERT INTO AccountDB(name, password) VALUES(?,?)"
             cursor.execute(query, (player.name, player.password))
             connection.commit()
             connection.close()
-            print('Success : New Account Created, Successfully')
-            return True
+            print('SUCCESS : New Account Created, Successfully')
+            return True, 'INFO : New Account Created, Successfully'
         except Exception as es:
             print('Error:Something went wrong try again', es)
-            return False
+            return False, str(es)
 
     def login(self, player: Player):
         conn = sqlite3.connect(self.db_file)
@@ -50,10 +47,14 @@ class AccountsRepository:
         cursor.execute(find_player, (player.name,))
         # result = cursor.fetchall()
         result = cursor.fetchone()
-        if result == None:
+        if None == result:
             return -1
         else:
-            return result[0]
+            db_password = result[2]
+            if db_password == player.password:
+                return result[0]
+            else:
+                return -1
 
         print('Success', 'Logged in Successfully')
 
@@ -78,4 +79,3 @@ class AccountsRepository:
     #             db.close()
     #             messagebox.showinfo("Congrats", "Password Changed Successfully")
     #             exit_window()
-

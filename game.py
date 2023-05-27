@@ -21,6 +21,8 @@ class Game:
         self.flop = []
         self.jackpot = 0
 
+    def get_round(self):
+        return self.round
 
     def set_table(self, table):
         self.table = table

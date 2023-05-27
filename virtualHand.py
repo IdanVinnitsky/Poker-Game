@@ -283,6 +283,7 @@ class VHand:
                 pr.from_message(request)
                 self.player = pr.your_hand
                 self.flop = pr.flop
+                self.screen.set_player_answer(None)
                 self.screen.update_screen(pr.get_num_players()-1)
 
                 print(">>>>>>>>>>>>>>>>>")

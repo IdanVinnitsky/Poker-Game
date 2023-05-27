@@ -48,6 +48,7 @@ class VTable:
     def __init__(self, name, age):
         self.lock = threading.Lock()
         self.hand_answers: dict[str, Player] = {}
+        self.curr_hand = 0
         self.in_game_protocol = None
         self.name = name
         self.age = age
@@ -125,6 +126,7 @@ class VTable:
             elif pr.protocolAct == ProtocolAct.REQUEST_START:
                 start_new_thread(self.client_request_game, (handNum, pr))
             elif pr.protocolAct == ProtocolAct.GAME:
+                # if self.curr_hand == handNum:
                 start_new_thread(self.update_running_game, (handNum, pr))
             else:
                 print("Error request:", pr.protocolAct)
@@ -179,11 +181,12 @@ class VTable:
                 print("Cards on table :", self.game.flop)
 
                 sock = self.handSocks[str(player.id)]
-
+                self.hand_answers.clear()
+                self.curr_hand = int(player.id)
                 pr = GameProtocol()
                 msg = pr.create_message1(ProtocolAct.GAME, player, self.game, roundNum, self.game.round_bid)
                 sock.send(pickle.dumps(msg))
-
+                self.hand_answers.clear()
                 # while True:
                     # print("Waiting for Response : HAND " + str(str(player.id)))
                     # data = pickle.loads(sock.recv(self.BUFFER_SIZE))
@@ -192,13 +195,16 @@ class VTable:
                     # pr = GameProtocol()
                     # pr.from_message(msg)
                     # with self.lock:
+                time.sleep(3)
                 received_player: Player = None
                 while True:
                     # print("Waiting for client response....")
+                    time.sleep(5)
                     received_player = self.hand_answers.get(str(player.id))
                     if received_player is not None:
                         break
                 print("Receive client response.")
+                self.curr_hand = -1
                 if roundNum == 1:
                     self.game.jackpot += received_player.bid
 
@@ -224,8 +230,9 @@ class VTable:
 
                 self.game.add_player(received_player)
 
-        if roundNum == 4:
-            print(f"the winner issss: {self.the_winner()}")
+
+        print(f"the winner issss: {self.the_winner()}")
+        self.request_players.clear()
         print("End running_game")
 
     def client_request_game(self, handNum, pr: GameProtocol):

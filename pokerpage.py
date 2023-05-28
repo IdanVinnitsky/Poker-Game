@@ -188,7 +188,7 @@ class PokerScreen(tk.Frame):
     def buttons_2(self):
         # Create the button
         self.call_button = tk.Button(self.root, text="CALL",
-                                     command=self.button_clicked("call"),
+                                     command=lambda: self.button_clicked("call"),
                                      width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -198,7 +198,7 @@ class PokerScreen(tk.Frame):
 
         # Create the button
         self.fold_button = tk.Button(self.root, text="FOLD",
-                                     command=self.button_clicked("fold"),
+                                     command=lambda: self.button_clicked("fold"),
                                      width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -207,7 +207,7 @@ class PokerScreen(tk.Frame):
         self.fold_button.place(x=x, y=y)
 
         self.raise_button = tk.Button(self.root, text="RAISE",
-                                      command=self.button_clicked("raise"),
+                                      command=lambda: self.button_clicked("raise"),
                                       width=10, height=2)
 
         # Place the button at the specified coordinates
@@ -412,7 +412,7 @@ class PokerScreen(tk.Frame):
         self.login(e1.get(), e2.get())
         status, message = self.vhand.receiveMessage()
         if status:
-            messagebox.showinfo("Information", message)
+            # messagebox.showinfo("Information", message)
             self.topW.withdraw()
             self.root.overrideredirect(0)
             self.root.deiconify()
@@ -443,7 +443,7 @@ class PokerScreen(tk.Frame):
         else:
             messagebox.showwarning(message, "Warning")
 
-    def login(self, userName: str, paswword: str ):
+    def login(self, userName: str, paswword: str):
         player = Player(-1)
         player.name = userName
         player.password = paswword

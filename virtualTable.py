@@ -100,10 +100,10 @@ class VTable:
 
         while True:
             cli_sock, addr = srv_sock.accept()
-            cli_sock.setblocking(1)
+            # cli_sock.setblocking(1)
             self.handSocks[str(self.handNum)] = cli_sock
             print("Send : HAND=" + str(self.handNum))
-            cli_sock.sendall(self.enc_tool.public_key_data)
+            cli_sock.send(self.enc_tool.public_key_data)
             start_new_thread(self.client_handler, (self.handNum, cli_sock))
             self.handNum += 1
 
@@ -195,15 +195,17 @@ class VTable:
                     # pr = GameProtocol()
                     # pr.from_message(msg)
                     # with self.lock:
-                time.sleep(3)
+                # time.sleep(3)
                 received_player: Player = None
                 while True:
                     # print("Waiting for client response....")
-                    time.sleep(5)
+                    # time.sleep(5)
                     received_player = self.hand_answers.get(str(player.id))
                     if received_player is not None:
                         break
                 print("Receive client response.")
+                # self.game.players[player.id].responseAct = received_player.responseAct
+                # self.game.players[player.id].bid = received_player.bid
                 self.curr_hand = -1
                 if roundNum == 1:
                     self.game.jackpot += received_player.bid
@@ -211,9 +213,9 @@ class VTable:
                 print("player.response:", received_player.responseAct)
                 # if received_player.responseAct != None:
 
-                if received_player.responseAct == HandAct.RAISE:
+                if received_player.responseAct == HandAct.RAISE or received_player.responseAct == HandAct.BET:
                     self.game.jackpot += received_player.bid
-                    self.game.round_status = HandAct.RAISE
+                    self.game.round_status = received_player.responseAct
                     self.game.round_bid = received_player.bid
                     players = self.game.get_players().copy()
                     players.remove(player)
@@ -222,11 +224,11 @@ class VTable:
 
                 if received_player.responseAct == HandAct.CALL:
                     self.game.jackpot += self.in_game_protocol.your_hand.bid
-
-                if self.in_game_protocol.your_hand.responseAct == HandAct.BET:
-                    self.game.jackpot += self.in_game_protocol.your_hand.bid
-                    self.game.round_status = HandAct.BET
-                    self.game.round_bid = self.game.min_bid
+                #
+                # if self.in_game_protocol.your_hand.responseAct == HandAct.BET:
+                #     self.game.jackpot += self.in_game_protocol.your_hand.bid
+                #     self.game.round_status = HandAct.BET
+                #     self.game.round_bid = self.game.min_bid
 
                 self.game.add_player(received_player)
 
@@ -256,11 +258,11 @@ class VTable:
         if playerId == -1:
             pr1 = GameProtocol()
             message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "ERROR : Player doesn't exist")
-            connection.sendall(pickle.dumps(message))
+            connection.send(pickle.dumps(message))
         else:
             pr1 = GameProtocol()
             message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "INFO : Player exists")
-            connection.sendall(pickle.dumps(message))
+            connection.send(pickle.dumps(message))
 
             pr.your_hand.id = handNum
             self.game.players[str(handNum)] = pr.your_hand
@@ -272,7 +274,7 @@ class VTable:
 
         pr1 = GameProtocol()
         message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, msg)
-        connection.sendall(pickle.dumps(message))
+        connection.send(pickle.dumps(message))
 
     def myfunc1(self):
         print("Hello my name is " + self.name)

@@ -46,6 +46,7 @@ class VHand:
             print(str(e))
 
     def send(self, data):
+        print("Sending ", data)
         if self.server_public_key == None:
             self.send1(data)
         else:

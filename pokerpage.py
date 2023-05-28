@@ -367,7 +367,7 @@ class PokerScreen(tk.Frame):
         self.display_name_and_money(self.vhand.player)
 
         if isOnlyScreen == False:
-            self.user_message_id = self.canvas.create_text(50, 362, text=self.vhand.player.name + " your turn", font=("Arial", 18))
+            self.user_message_id = self.canvas.create_text(100, 100, text=self.vhand.player.name + " your turn", font=("Arial", 18))
             if self.vhand.in_game_protocol.round_status == HandAct.BET or \
                     self.vhand.in_game_protocol.round_status == HandAct.RAISE or \
                     self.vhand.in_game_protocol.round_status == HandAct.CALL:

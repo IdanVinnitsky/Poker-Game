@@ -147,7 +147,7 @@ class VTable:
             player.set_cards(self.game.get_card(), self.game.get_card())
             sock = self.handSocks[str(numHand)]
             pr = GameProtocol()
-            msg = pr.create_message1(ProtocolAct.GAME, player, self.game, 0, 0)
+            msg = pr.create_message1(ProtocolAct.UPDATE_SCREEN, player, self.game, 0, 0)
             sock.send(pickle.dumps(msg))
 
         self.hand_answers.clear()
@@ -204,8 +204,8 @@ class VTable:
                     if received_player is not None:
                         break
                 print("Receive client response.")
-                # self.game.players[player.id].responseAct = received_player.responseAct
-                # self.game.players[player.id].bid = received_player.bid
+                self.game.players[str(player.id)].responseAct = received_player.responseAct
+                self.game.players[str(player.id)].bid = received_player.bid
                 self.curr_hand = -1
                 if roundNum == 1:
                     self.game.jackpot += received_player.bid

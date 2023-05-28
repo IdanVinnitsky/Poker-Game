@@ -141,9 +141,13 @@ class VHand:
                             self.otherHands = [x for x in self.in_game_protocol.players if x != self.player]
                             print(f"others : {self.otherHands}")
                             self.flop = self.in_game_protocol.flop
-                            self.screen.update_screen()
+                            self.screen.update_screen(False)
 
-
+                    if self.in_game_protocol.protocolAct == ProtocolAct.UPDATE_SCREEN:
+                        self.player = self.in_game_protocol.your_hand
+                        self.otherHands = [x for x in self.in_game_protocol.players if x != self.player]
+                        self.flop = self.in_game_protocol.flop
+                        self.screen.update_screen(True)
 
                 except Exception as e:
                     print(e)

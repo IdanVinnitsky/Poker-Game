@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 #
 class ProtocolAct(Enum):
     NO_DEF = 'no_def'

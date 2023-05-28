@@ -32,7 +32,7 @@ class GameProtocol:
     def __init__(self):
         """
         example of a message :
-        size|protocol type|game status|round status|round num|round_bid|jackpot|your hand(2 cards)|players|flop$
+        size|protocol type| message |game status|round status|round num|round_bid|jackpot|your hand(2 cards)|players|flop$
         size : a number
         protocol action: GAME, LOGIN, UPDATE_SCREEN
         game status: string

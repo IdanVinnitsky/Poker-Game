@@ -5,7 +5,7 @@ from deck import Deck
 class Player:
     def __init__(self, id):
         self.name = None
-        self.money = 6942
+        self.money = 5000
         self.is_turn = False
         #self.title = title
         self.cards = None

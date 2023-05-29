@@ -125,6 +125,8 @@ class VTable:
                 start_new_thread(self.client_signup, (handNum, pr, connection))
             elif pr.protocolAct == ProtocolAct.REQUEST_START:
                 start_new_thread(self.client_request_game, (handNum, pr))
+            elif pr.protocolAct == ProtocolAct.APPEND:
+                start_new_thread(self.client_append_game, (handNum, pr))
             elif pr.protocolAct == ProtocolAct.GAME:
                 # if self.curr_hand == handNum:
                 start_new_thread(self.update_running_game, (handNum, pr))
@@ -237,12 +239,22 @@ class VTable:
         self.request_players.clear()
         print("End running_game")
 
+
+    def client_append_game(self, handNum, pr: GameProtocol):
+        self.request_players.append(handNum)
+        pr.your_hand.id = handNum
+        self.game.players[str(handNum)] = pr.your_hand
+        if len(self.request_players) == 2:
+            start_new_thread(self.running_game)
+
+
     def client_request_game(self, handNum, pr: GameProtocol):
         self.request_players.append(handNum)
         pr.your_hand.id = handNum
         self.game.players[str(handNum)] = pr.your_hand
         if len(self.request_players) == 2:
             start_new_thread(self.running_game)
+
 
     def update_running_game(self, handNum, pr: GameProtocol):
         print("update_running_game")

@@ -1,4 +1,3 @@
-
 import pickle
 import socket
 import threading
@@ -56,8 +55,6 @@ class VHand:
                 self.client_sock.send(encrypted_data)
             except socket.error as e:
                 print(str(e))
-
-
 
     def init_hand_game(self):
         self.conncting()
@@ -182,7 +179,7 @@ class VHand:
                 pr.from_message(request)
                 self.player = pr.your_hand
                 self.flop = pr.flop
-                self.screen.update_screen(pr.get_num_players()-1)
+                self.screen.update_screen(pr.get_num_players() - 1)
 
                 print(">>>>>>>>>>>>>>>>>")
                 print("Round num:" + str(pr.round_num))
@@ -197,7 +194,6 @@ class VHand:
 
                 if pr.your_hand.responseAct == HandAct.FOLD:
                     break
-
 
                 ans = None
                 while True:
@@ -229,19 +225,19 @@ class VHand:
         except Exception as e:
             print(e)
 
-    def  send_player_response(self, act: HandAct, val: str):
+    def temp_send_player_response(self, act: HandAct, val: str):
         print("Player Action", act)
         player = self.in_game_protocol.your_hand
 
         player.responseAct = act
         if self.in_game_protocol.round_num == 1:
-            if player.responseAct != HandAct.FOLD:
-                player.bid = self.in_game_protocol.round_bid
-                self.player.money -= self.in_game_protocol.round_bid
+            player.bid = self.in_game_protocol.round_bid
+            self.player.money -= self.in_game_protocol.round_bid
 
         if player.responseAct == HandAct.RAISE:
             print("RAISE")
             player.bid = int(val)
+
             # new_bet = self.printRaiseMenu(self.in_game_protocol)
             # show message
             # player.bid = new_bet
@@ -254,6 +250,28 @@ class VHand:
         msg = self.in_game_protocol.create_message(ProtocolAct.GAME, player)
         self.send(msg)
 
+    def send_player_response(self, act: HandAct, val: str):
+        print("Player Action", act)
+        self.player.responseAct = act
+        if self.in_game_protocol.round_num == 1:
+            self.player.bid = self.in_game_protocol.round_bid
+            self.player.money -= self.in_game_protocol.round_bid
+
+        if act == HandAct.RAISE:
+            print("RAISE")
+            self.player.bid += int(val)
+            self.player.money -= int(val)
+            # new_bet = self.printRaiseMenu(self.in_game_protocol)
+            # show message
+            # player.bid = new_bet
+            # self.player.money -= new_bet
+
+        if act == HandAct.BET or act == HandAct.CALL:
+            self.player.money -= self.in_game_protocol.round_bid
+            self.player.bid = self.in_game_protocol.round_bid
+
+        msg = self.in_game_protocol.create_message(ProtocolAct.GAME, self.player)
+        self.send(msg)
 
     def running_game1(self):
         try:
@@ -289,7 +307,7 @@ class VHand:
                 self.player = pr.your_hand
                 self.flop = pr.flop
                 self.screen.set_player_answer(None)
-                self.screen.update_screen(pr.get_num_players()-1)
+                self.screen.update_screen(pr.get_num_players() - 1)
 
                 print(">>>>>>>>>>>>>>>>>")
                 print("Round num:" + str(pr.round_num))
@@ -304,7 +322,6 @@ class VHand:
 
                 if pr.your_hand.responseAct == HandAct.FOLD:
                     break
-
 
                 ans = None
                 while True:
@@ -335,8 +352,6 @@ class VHand:
 
         except Exception as e:
             print(e)
-
-
 
     def initHand(self):
         try:
@@ -407,7 +422,6 @@ class VHand:
         except Exception as e:
             print(e)
 
-
     def printRaiseMenu(self, pr: GameProtocol):
         while True:
             user_input = input("Enter new bet:")
@@ -458,7 +472,7 @@ class VHand:
 
     def printMenu(self):
         while True:
-            print("Menu Options: conn , " )
+            print("Menu Options: conn , ")
             # Get user input
             user_input = input("Enter a command: ")
 
@@ -482,7 +496,6 @@ class VHand:
         print("Menu Options: conn , ")
         self.initHand()
 
-
     def sendLogin(self):
         self.send()
 
@@ -496,8 +509,8 @@ class VHand:
 
                 print("Receive data:", message)
                 if pr.protocolAct == ProtocolAct.MESSAGE:
-                    is_ok =  pr.message.startswith("INFO")
-                return(is_ok, pr.message)
+                    is_ok = pr.message.startswith("INFO")
+                return (is_ok, pr.message)
             except Exception as e:
                 print(e)
 

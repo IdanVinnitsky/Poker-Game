@@ -17,6 +17,7 @@ from game import Game
 from gamemsg import Data
 import time
 
+
 def determine_winner(player1_hand, player2_hand):
     if player1_hand == player2_hand:
         return player1_hand
@@ -40,7 +41,7 @@ def determine_winner(player1_hand, player2_hand):
                 return player2_hand
 
     # If no winner is determined, it's a tie
-    #return "It's a tie!"
+    # return "It's a tie!"
 
 
 class VTable:
@@ -61,7 +62,6 @@ class VTable:
         self.accountsRep = AccountsRepository()
         self.request_players = []
 
-
     def the_winner(self):
         dict_hands = {}
         flop = self.game.flop
@@ -79,7 +79,6 @@ class VTable:
         id_winner = list(dict_ranks.keys())[list(dict_ranks.values()).index(winner)]
 
         return id_winner
-
 
     def start_server(self):
         print("Hello my name is " + self.name)
@@ -109,7 +108,6 @@ class VTable:
 
         srv_sock.close()  # close the connection
 
-
     def client_handler(self, handNum, connection):
         connection.send(str.encode('You are now connected to the replay server... Type BYE to stop'))
         while True:
@@ -136,22 +134,26 @@ class VTable:
 
         connection.close()
 
-    def running_game(self):
-        print("Start running_game")
-        self.game.start_game()
-
-        # for key, sock in self.handSocks.items():
-        #     sock.send(pickle.dumps(gameMsg))
-
-
-
+    def send_update_screen(self):
         for numHand, player in self.game.players.items():
             player.set_cards(self.game.get_card(), self.game.get_card())
             sock = self.handSocks[str(numHand)]
             pr = GameProtocol()
             msg = pr.create_message1(ProtocolAct.UPDATE_SCREEN, player, self.game, 0, 0)
-            sock.send(pickle.dumps(msg))
+            sock.sendall(pickle.dumps(msg))
 
+
+    def running_game(self):
+        print("Start running_game")
+        self.game.start_game()
+        #
+        # for numHand, player in self.game.players.items():
+        #     player.set_cards(self.game.get_card(), self.game.get_card())
+        #     sock = self.handSocks[str(numHand)]
+        #     pr = GameProtocol()
+        #     msg = pr.create_message1(ProtocolAct.UPDATE_SCREEN, player, self.game, 0, 0)
+        #     sock.send(pickle.dumps(msg))
+        # self.send_update_screen()
         self.hand_answers.clear()
         # 3 cards; +1; +1
         for roundNum in range(1, 5):
@@ -159,6 +161,7 @@ class VTable:
             print("Round ", roundNum)
             self.hand_answers.clear()
             self.game.round = roundNum
+            self.game.round_status = HandAct.NO_DEF
             if roundNum == 1:
                 self.game.round_bid = 5
             elif roundNum == 2:
@@ -176,6 +179,7 @@ class VTable:
             players: List[Player] = self.game.get_players().copy()
             # for player in players:
             while index < len(players):
+                self.send_update_screen()
                 player = players[index]
                 index += 1
                 print("player:" + str(player.id))
@@ -190,13 +194,13 @@ class VTable:
                 sock.send(pickle.dumps(msg))
                 self.hand_answers.clear()
                 # while True:
-                    # print("Waiting for Response : HAND " + str(str(player.id)))
-                    # data = pickle.loads(sock.recv(self.BUFFER_SIZE))
-                    # data = sock.recv(self.BUFFER_SIZE)
-                    # msg = self.enc_tool.decrypt(data)
-                    # pr = GameProtocol()
-                    # pr.from_message(msg)
-                    # with self.lock:
+                # print("Waiting for Response : HAND " + str(str(player.id)))
+                # data = pickle.loads(sock.recv(self.BUFFER_SIZE))
+                # data = sock.recv(self.BUFFER_SIZE)
+                # msg = self.enc_tool.decrypt(data)
+                # pr = GameProtocol()
+                # pr.from_message(msg)
+                # with self.lock:
                 # time.sleep(3)
                 received_player: Player = None
                 while True:
@@ -234,11 +238,11 @@ class VTable:
 
                 self.game.add_player(received_player)
 
-
+        self.send_update_screen()
         print(f"the winner issss: {self.the_winner()}")
+
         self.request_players.clear()
         print("End running_game")
-
 
     def client_append_game(self, handNum, pr: GameProtocol):
         self.request_players.append(handNum)
@@ -247,7 +251,6 @@ class VTable:
         if len(self.request_players) == 2:
             start_new_thread(self.running_game)
 
-
     def client_request_game(self, handNum, pr: GameProtocol):
         self.request_players.append(handNum)
         pr.your_hand.id = handNum
@@ -255,13 +258,11 @@ class VTable:
         if len(self.request_players) == 2:
             start_new_thread(self.running_game)
 
-
     def update_running_game(self, handNum, pr: GameProtocol):
         print("update_running_game")
         self.in_game_protocol = pr
         self.hand_answers[str(handNum)] = pr.your_hand
         # self.lock.release()
-
 
     def client_login(self, handNum, pr: GameProtocol, connection):
         print("client_login")
@@ -280,7 +281,6 @@ class VTable:
             self.game.players[str(handNum)] = pr.your_hand
             print(" Set playerId:", playerId)
 
-
     def client_signup(self, handNum, pr: GameProtocol, connection):
         is_signup, msg = self.accountsRep.signup(pr.your_hand)
 
@@ -290,7 +290,6 @@ class VTable:
 
     def myfunc1(self):
         print("Hello my name is " + self.name)
-
 
         # host = socket.gethostname()
         # port = 5000  # initiate port no above 1024
@@ -333,7 +332,6 @@ class VTable:
 
         conn.close()  # close the connection
 
-
     def start_game(self):
         print("START start_game")
         self.game.start_game()
@@ -341,18 +339,18 @@ class VTable:
         # for key, sock in self.handSocks.items():
         #     sock.send(pickle.dumps(gameMsg))
 
-        for player in self.game.get_players():
-            for i in range(2):
-                player.set_cards(self.game.get_card(), self.game.get_card())
-            sock = self.handSocks[str(player.id)]
-            pr = GameProtocol()
-            msg = pr.create_message1(ProtocolAct.GAME, player, self.game, 0, 0)
-            sock.send(pickle.dumps(msg))
+        # for player in self.game.get_players():
+        #     for i in range(2):
+        #         player.set_cards(self.game.get_card(), self.game.get_card())
+        #     sock = self.handSocks[str(player.id)]
+        #     pr = GameProtocol()
+        #     msg = pr.create_message1(ProtocolAct.GAME, player, self.game, 0, 0)
+        #     sock.send(pickle.dumps(msg))
 
         # 3 cards; +1; +1
         for roundNum in range(1, 5):
-            print(">>>>>>>>>>>>>>>>>>>>> ",)
-            print("Round ",roundNum)
+            print(">>>>>>>>>>>>>>>>>>>>> ", )
+            print("Round ", roundNum)
             self.game.round = roundNum
             if roundNum == 1:
                 self.game.round_bid = 5
@@ -419,15 +417,9 @@ class VTable:
 
                         break
 
-
-
-
-
-
         # Send ALl START Game
         if roundNum == 4:
             print(f"the winner issss: {self.the_winner()}")
-
 
         print("END start_game")
 

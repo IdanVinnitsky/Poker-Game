@@ -90,13 +90,14 @@ class PokerScreen(tk.Frame):
 
     def button_clicked(self, act: str):
         print("Button clicked!")
-        self.disable_buttons()
-        self.canvas.delete(self.user_message_id)
         player_answer = HandAct(act)
         val = '0'
         if player_answer == HandAct.RAISE:
             val = simpledialog.askstring("Input Box", "How much money:", parent=self.root)
         self.vhand.send_player_response(player_answer, val)
+        self.update_screen(True)
+        self.disable_buttons()
+        self.canvas.delete(self.user_message_id)
 
     def get_vhand(self):
         return self.vhand
@@ -411,12 +412,16 @@ class PokerScreen(tk.Frame):
 
         if isOnlyScreen == False:
             self.user_message_id = self.canvas.create_text(100, 100, text=self.vhand.player.name + " is your turn", font=("Arial", 18))
-            if self.vhand.in_game_protocol.round_status == HandAct.BET or \
-                    self.vhand.in_game_protocol.round_status == HandAct.RAISE or \
-                    self.vhand.in_game_protocol.round_status == HandAct.CALL:
+
+            if self.vhand.in_game_protocol.round_num == 1:
                 self.set_buttons_FClR()
             else:
-                self.set_buttons_FChR()
+                if self.vhand.in_game_protocol.round_status == HandAct.BET or \
+                        self.vhand.in_game_protocol.round_status == HandAct.RAISE or \
+                        self.vhand.in_game_protocol.round_status == HandAct.CALL:
+                    self.set_buttons_FClR()
+                else:
+                    self.set_buttons_FChR()
 
         # self.labels()
         self.show_other_players(self.vhand.otherHands)

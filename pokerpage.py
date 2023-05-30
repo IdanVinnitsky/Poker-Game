@@ -106,6 +106,7 @@ class PokerScreen(tk.Frame):
         return self.vhand
 
     def display_name_and_money(self, player):
+
         # self.canvas.create_text(540, 362, text=str(player.get_name()), font=("Arial", 18))
         self.canvas.create_text(540, 362, text='You', font=("Arial", 18))
         self.display_player_act(540, 392, player)
@@ -216,6 +217,18 @@ class PokerScreen(tk.Frame):
         self.canvas.create_image(x, y, image=self.card3_flop, anchor="nw")
         x += 74
 
+    def clean_flop(self):
+        x = 250
+        y = 169
+        self.canvas.create_image(x, y, image=self.back_image, anchor="nw")
+        x += 74
+        self.canvas.create_image(x, y, image=self.back_image, anchor="nw")
+        x += 74
+        self.canvas.create_image(x, y, image=self.back_image, anchor="nw")
+        x += 74
+        self.canvas.create_image(x, y, image=self.back_image, anchor="nw")
+        x += 74
+        self.canvas.create_image(x, y, image=self.back_image, anchor="nw")
 
     def show(self):
         self.lift()
@@ -453,6 +466,7 @@ class PokerScreen(tk.Frame):
         self.canvas.create_text(100, 100, text=winner_name + " is the winner", font=("Arial", 18))
 
     def update_screen(self, isOnlyScreen):
+        self.clean_flop()
         self.show_my_cards(self.vhand.player.cards[0], self.vhand.player.cards[1])
         self.display_name_and_money(self.vhand.player)
 
@@ -514,7 +528,7 @@ class PokerScreen(tk.Frame):
                 self.show_first_flop()
                 self.show_card4_flop()
                 self.show_card5_flop()
-
+        self.vhand.flop = None
 
 
     def createMenu(self):

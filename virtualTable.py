@@ -112,6 +112,7 @@ class VTable:
         #     sock.send(pickle.dumps(msg))
         # self.send_update_screen()
         self.hand_answers.clear()
+        self.game.flop.clear()
         for numHand, player in self.game.players.items():
             player.set_cards(self.game.get_card(), self.game.get_card())
         # 3 cards; +1; +1
@@ -201,7 +202,7 @@ class VTable:
         winner.add_money(self.game.jackpot)
 
         for numHand, player in self.game.players.items():
-            player.set_cards(self.game.get_card(), self.game.get_card())
+            #player.set_cards(self.game.get_card(), self.game.get_card())
             sock = self.handSocks[str(numHand)]
             pr = GameProtocol()
             msg = pr.create_message1(ProtocolAct.WINNER, winner, self.game, 5, 0)
@@ -220,7 +221,7 @@ class VTable:
 
     def client_request_game(self, handNum, pr: GameProtocol):
         if len(self.request_players) > 1:
-            start_new_thread(self.running_game)
+            start_new_thread(self.running_game, ())
 
     def update_running_game(self, handNum, pr: GameProtocol):
         print("update_running_game")

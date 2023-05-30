@@ -112,7 +112,7 @@ class GameProtocol:
                 res += "," + "," + "," + "," + ",;"
             else:
                 res += "," + str(cards[0].getValue().value) + "," + str(cards[0].getSuit().value) + "," + str(
-                    cards[1].getValue().value) + "," + str(cards[0].getSuit().value)
+                    cards[1].getValue().value) + "," + str(cards[1].getSuit().value)
                 res += ";"
         res = res[:-1]
 

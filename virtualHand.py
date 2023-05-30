@@ -113,6 +113,8 @@ class VHand:
 
     def append_game(self):
         try:
+            self.flop = None
+            self.otherHands = None
             pr = GameProtocol()
             msg = pr.create_message2(ProtocolAct.APPEND_GAME, GameStatus.REQUEST_START, self.player)
             self.send(msg)
@@ -127,13 +129,13 @@ class VHand:
         msg = pr.create_message2(ProtocolAct.REQUEST_START, GameStatus.REQUEST_START, self.player)
         self.send(msg)
 
+        self.flop =None
+        self.otherHands = None
+        self.playerAct: HandAct = HandAct.NO_DEF
+        self.in_game_protocol: GameProtocol = GameProtocol()
 
     def running_game(self):
         try:
-            pr = GameProtocol()
-            msg = pr.create_message2(ProtocolAct.REQUEST_START, GameStatus.REQUEST_START, self.player)
-            self.send(msg)
-
             while True:
                 try:
                     print("Waitning for data:")

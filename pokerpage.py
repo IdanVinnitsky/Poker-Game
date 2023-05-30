@@ -84,6 +84,9 @@ class PokerScreen(tk.Frame):
             self.card3_flop = None
             self.card4_flop = None
             self.card5_flop = None
+
+            self.p1_card1 = None
+            self.p1_card2 = None
         except tk.TclError as e:
             print("Error loading image:", str(e))
             self.photo = None
@@ -354,6 +357,40 @@ class PokerScreen(tk.Frame):
         self.check_button.config(state="normal")
         self.fold_button.config(state="normal")
 
+    def show_other_players_cards(self, other_players):
+        num = len(other_players)
+        if num >= 1:
+            self.p1_card1 = tk.PhotoImage(file="cards/" + self.image_dict[other_players[0].cards[0]])
+            self.p1_card2 = tk.PhotoImage(file="cards/" + self.image_dict[other_players[0].cards[1]])
+
+            self.canvas.create_image(62, 306, image=self.p1_card1, anchor="nw")
+            self.canvas.create_image(136, 306, image=self.p1_card2, anchor="nw")
+            # # self.canvas.delete('all')
+            # self.canvas.create_image(62, 306, image=_card1_img, anchor="nw")
+            # self.canvas.create_image(136, 306, image=_card2_img, anchor="nw")
+
+            self.canvas.create_text(240, 362, text=str(other_players[0].get_name()), font=("Arial", 19))
+            self.display_player_act(240, 392, other_players[0])
+            self.display_player_money(240, 422, other_players[0])
+            # self.canvas.create_text(240, 392, text=str(other_players[0].get_money()), font=("Arial", 16))
+            # self.canvas.create_text(240, 422, text=str(other_players[0].get_respone()), font=("Arial", 16), fill="red")40, 422, other_players[0])
+
+            # text.pack()
+            # self.canvas.create_
+
+        if num >= 2:
+            self.canvas.create_image(59, 56, image=self.back_image, anchor="nw")
+            self.canvas.create_image(133, 56, image=self.back_image, anchor="nw")
+        if num >= 3:
+            self.canvas.create_image(366, 2, image=self.back_image, anchor="nw")
+            self.canvas.create_image(440, 2, image=self.back_image, anchor="nw")
+        if num >= 4:
+            self.canvas.create_image(672, 56, image=self.back_image, anchor="nw")
+            self.canvas.create_image(746, 56, image=self.back_image, anchor="nw")
+        if num >= 5:
+            self.canvas.create_image(672, 306, image=self.back_image, anchor="nw")
+            self.canvas.create_image(746, 306, image=self.back_image, anchor="nw")
+
 
 
     def show_other_players(self, other_players):
@@ -451,6 +488,33 @@ class PokerScreen(tk.Frame):
                 self.show_card4_flop()
                 self.show_card5_flop()
 
+    def update_winner_screen(self, winner: Player):
+        self.show_my_cards(self.vhand.player.cards[0], self.vhand.player.cards[1])
+        self.display_name_and_money(self.vhand.player)
+
+
+        self.user_message_id = self.canvas.create_text(100, 100, text=winner.name + " is Winner", font=("Arial", 18))
+
+
+        # self.labels()
+        self.show_other_players_cards(self.vhand.otherHands)
+
+        if self.vhand.flop is not None:
+            if len(self.vhand.flop) == 3:
+                self.set_first_flop(self.vhand.flop)
+                self.show_first_flop()
+
+            if len(self.vhand.flop) == 4:
+                self.set_2_flop(self.vhand.flop)
+                self.show_first_flop()
+                self.show_card4_flop()
+
+            if len(self.vhand.flop) == 5:
+                self.set_3_flop(self.vhand.flop)
+                self.show_first_flop()
+                self.show_card4_flop()
+                self.show_card5_flop()
+
 
 
     def createMenu(self):
@@ -486,8 +550,7 @@ class PokerScreen(tk.Frame):
 
     def board_button_clicked(self, act: str):
         if act == 'Append':
-            self.login_screen()
-            # self.vhand.login()
+            self.vhand.append_game()
         elif act == 'StartGame':
             self.vhand.startGame()
         elif act == 'Signup':
@@ -628,17 +691,17 @@ def main():
 
     page = PokerScreen(root)
     page.createMenu()
-    page.login_screen()
+    # page.login_screen()
 
     page.pack(fill="both", expand=True)
 
     vhand = page.get_vhand()
     vhand.initUIHand(page)
 
-    #page.login(sys.argv[1], sys.argv[2])
-    #status, message = vhand.receiveMessage()
-    #if status:
-    #    page.set_title("Wellcome " + sys.argv[1])
+    page.login(sys.argv[1], sys.argv[2])
+    status, message = vhand.receiveMessage()
+    if status:
+       page.set_title("Wellcome " + sys.argv[1])
 
     root.mainloop()
 

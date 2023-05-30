@@ -30,12 +30,12 @@ class VTable:
         self.age = age
         self.handNum: int = 1
         self.handSocks: dict[str, socket] = {}
-        self.deck = Deck()
-        self.game = Game(1, self.deck)
+        deck = Deck()
+        self.game = Game(1, deck)
         self.BUFFER_SIZE = 4096
         self.enc_tool: EncryptionTool = EncryptionTool()
         self.accountsRep = AccountsRepository()
-        self.request_players = []
+        self.request_players = set()
 
 
     def start_server(self):
@@ -66,7 +66,6 @@ class VTable:
 
         srv_sock.close()  # close the connection
 
-
     def client_handler(self, handNum, connection):
         connection.send(str.encode('You are now connected to the replay server... Type BYE to stop'))
         while True:
@@ -82,7 +81,7 @@ class VTable:
                 start_new_thread(self.client_signup, (handNum, pr, connection))
             elif pr.protocolAct == ProtocolAct.REQUEST_START:
                 start_new_thread(self.client_request_game, (handNum, pr))
-            elif pr.protocolAct == ProtocolAct.APPEND:
+            elif pr.protocolAct == ProtocolAct.APPEND_GAME:
                 start_new_thread(self.client_append_game, (handNum, pr))
             elif pr.protocolAct == ProtocolAct.GAME:
                 # if self.curr_hand == handNum:
@@ -214,18 +213,14 @@ class VTable:
         print("End running_game")
 
     def client_append_game(self, handNum, pr: GameProtocol):
-        self.request_players.append(handNum)
+        self.request_players.add(handNum)
         pr.your_hand.id = handNum
         self.game.players[str(handNum)] = pr.your_hand
-        if len(self.request_players) == 2:
-            start_new_thread(self.running_game, ())
+
 
     def client_request_game(self, handNum, pr: GameProtocol):
-        self.request_players.append(handNum)
-        pr.your_hand.id = handNum
-        self.game.players[str(handNum)] = pr.your_hand
-        if len(self.request_players) == 2:
-            start_new_thread(self.running_game, ())
+        if len(self.request_players) > 1:
+            start_new_thread(self.running_game)
 
     def update_running_game(self, handNum, pr: GameProtocol):
         print("update_running_game")
@@ -300,7 +295,6 @@ class VTable:
                 t.start()
 
         conn.close()  # close the connection
-
 
     def start_game(self):
         print("START start_game")

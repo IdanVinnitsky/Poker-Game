@@ -11,5 +11,5 @@ class ProtocolAct(Enum):
     WINNER = 'winner'
     REQUEST_START = 'request_game'
     MESSAGE = 'message'
-    APPEND = 'append'
+    APPEND_GAME = 'append'
 

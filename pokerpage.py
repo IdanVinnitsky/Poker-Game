@@ -17,7 +17,6 @@ from PIL import Image
 
 from PIL import ImageTk, Image
 
-
 def create_card_dict():
     folder_path = 'cards'
     file_list = os.listdir(folder_path)
@@ -36,6 +35,7 @@ def create_card_dict():
         dictionary[cards[i]] = file_list[i]
 
     return dictionary
+
 
 
 class PokerScreen(tk.Frame):
@@ -164,6 +164,7 @@ class PokerScreen(tk.Frame):
         self.canvas.create_image(366, 360, image=self.card1_img, anchor="nw")
         self.canvas.create_image(440, 360, image=self.card2_img, anchor="nw")
 
+
     def set_first_flop(self, flop):
         self.card1_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[0]])
         self.card2_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[1]])
@@ -198,6 +199,7 @@ class PokerScreen(tk.Frame):
     def set_card5_flop(self, card5):
         self.card4_flop = tk.PhotoImage(file="cards/" + self.image_dict[card5])
 
+
     def show_first_flop(self):
         x = 250
         y = 169
@@ -210,6 +212,7 @@ class PokerScreen(tk.Frame):
 
         self.canvas.create_image(x, y, image=self.card3_flop, anchor="nw")
         x += 74
+
 
     def show(self):
         self.lift()
@@ -351,6 +354,8 @@ class PokerScreen(tk.Frame):
         self.check_button.config(state="normal")
         self.fold_button.config(state="normal")
 
+
+
     def show_other_players(self, other_players):
         num = len(other_players)
         if num >= 1:
@@ -406,6 +411,10 @@ class PokerScreen(tk.Frame):
 
         self.root.after(2000, self.update_label(label))
 
+    def update_screen_winner(self, winner):
+        winner_name = winner.get_name()
+        self.canvas.create_text(100, 100, text=winner_name + " is the winner", font=("Arial", 18))
+
     def update_screen(self, isOnlyScreen):
         self.show_my_cards(self.vhand.player.cards[0], self.vhand.player.cards[1])
         self.display_name_and_money(self.vhand.player)
@@ -441,6 +450,8 @@ class PokerScreen(tk.Frame):
                 self.show_first_flop()
                 self.show_card4_flop()
                 self.show_card5_flop()
+
+
 
     def createMenu(self):
 
@@ -553,6 +564,7 @@ class PokerScreen(tk.Frame):
         else:
             messagebox.showwarning("Warning", message)
 
+
     def signup_screen_action(self, e1, e2):
         # self.root.deiconify()
         # self.topW.withdraw()
@@ -616,16 +628,17 @@ def main():
 
     page = PokerScreen(root)
     page.createMenu()
-    # page.login_screen()
+    page.login_screen()
 
     page.pack(fill="both", expand=True)
 
     vhand = page.get_vhand()
     vhand.initUIHand(page)
-    page.login(sys.argv[1], sys.argv[2])
-    status, message = vhand.receiveMessage()
-    if status:
-        page.set_title("Wellcome " + sys.argv[1])
+
+    #page.login(sys.argv[1], sys.argv[2])
+    #status, message = vhand.receiveMessage()
+    #if status:
+    #    page.set_title("Wellcome " + sys.argv[1])
 
     root.mainloop()
 

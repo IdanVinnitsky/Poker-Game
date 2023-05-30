@@ -108,7 +108,6 @@ class VHand:
             self.server_public_key = rsa.PublicKey.load_pkcs1(server_public_key_data)
             print("key:", self.server_public_key)
 
-
         except Exception as e:
             print(e)
 
@@ -145,6 +144,10 @@ class VHand:
                         self.otherHands = [x for x in self.in_game_protocol.players if x != self.player]
                         self.flop = self.in_game_protocol.flop
                         self.screen.update_screen(True)
+
+                    if self.in_game_protocol.protocolAct == ProtocolAct.WINNER:
+                        winner = self.in_game_protocol.your_hand
+                        self.screen.update_screen(winner)
 
                 except Exception as e:
                     print(e)

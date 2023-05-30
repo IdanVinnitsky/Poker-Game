@@ -18,31 +18,6 @@ from gamemsg import Data
 import time
 
 
-def determine_winner(player1_hand, player2_hand):
-    if player1_hand == player2_hand:
-        return player1_hand
-
-    player1_rank = player1_hand[0]  # HandRank of player 1
-    player1_cards = player1_hand[1]  # Cards of player 1
-    player2_rank = player2_hand[0]  # HandRank of player 2
-    player2_cards = player2_hand[1]  # Cards of player 2
-
-    # Compare the hand ranks
-    if player1_rank.value > player2_rank.value:
-        return player1_hand
-    elif player1_rank.value < player2_rank.value:
-        return player2_hand
-    else:
-        # Hand ranks are the same, compare the cards
-        for i in range(len(player1_cards)):
-            if player1_cards[i].getValue().value > player2_cards[i].getValue().value:
-                return player1_hand
-            elif player1_cards[i].getValue().value < player2_cards[i].getValue().value:
-                return player2_hand
-
-    # If no winner is determined, it's a tie
-    # return "It's a tie!"
-
 
 class VTable:
 
@@ -55,30 +30,13 @@ class VTable:
         self.age = age
         self.handNum: int = 1
         self.handSocks: dict[str, socket] = {}
-        deck = Deck()
-        self.game = Game(1, deck)
+        self.deck = Deck()
+        self.game = Game(1, self.deck)
         self.BUFFER_SIZE = 4096
         self.enc_tool: EncryptionTool = EncryptionTool()
         self.accountsRep = AccountsRepository()
         self.request_players = []
 
-    def the_winner(self):
-        dict_hands = {}
-        flop = self.game.flop
-        for key, pl in self.game.players.items():
-            dict_hands[key] = Hand(flop + list(pl.get_cards()))
-        dict_ranks = {}
-        for key, hand in dict_hands.items():
-            dict_ranks[key] = hand.get_hand_rank()
-
-        winner = None
-        for key in dict_ranks.keys():
-            if int(key) < len(dict_ranks.keys()) - 1:
-                winner = determine_winner(dict_ranks[key], dict_ranks[str(int(key) + 1)])
-
-        id_winner = list(dict_ranks.keys())[list(dict_ranks.values()).index(winner)]
-
-        return id_winner
 
     def start_server(self):
         print("Hello my name is " + self.name)
@@ -107,6 +65,7 @@ class VTable:
             self.handNum += 1
 
         srv_sock.close()  # close the connection
+
 
     def client_handler(self, handNum, connection):
         connection.send(str.encode('You are now connected to the replay server... Type BYE to stop'))
@@ -238,8 +197,19 @@ class VTable:
 
                 self.game.add_player(received_player)
 
-        self.send_update_screen()
-        print(f"the winner issss: {self.the_winner()}")
+
+        self.game.find_winner()
+        winner = self.game.get_winner()
+        winner.add_money(self.game.jackpot)
+
+        for numHand, player in self.game.players.items():
+            player.set_cards(self.game.get_card(), self.game.get_card())
+            sock = self.handSocks[str(numHand)]
+            pr = GameProtocol()
+            msg = pr.create_message1(ProtocolAct.WINNER, winner, self.game, 5, 0)
+            sock.send(pickle.dumps(msg))
+
+        print(f"the winner issss: {winner}")
 
         self.request_players.clear()
         print("End running_game")
@@ -249,14 +219,14 @@ class VTable:
         pr.your_hand.id = handNum
         self.game.players[str(handNum)] = pr.your_hand
         if len(self.request_players) == 2:
-            start_new_thread(self.running_game)
+            start_new_thread(self.running_game, ())
 
     def client_request_game(self, handNum, pr: GameProtocol):
         self.request_players.append(handNum)
         pr.your_hand.id = handNum
         self.game.players[str(handNum)] = pr.your_hand
         if len(self.request_players) == 2:
-            start_new_thread(self.running_game)
+            start_new_thread(self.running_game, ())
 
     def update_running_game(self, handNum, pr: GameProtocol):
         print("update_running_game")
@@ -331,6 +301,7 @@ class VTable:
                 t.start()
 
         conn.close()  # close the connection
+
 
     def start_game(self):
         print("START start_game")

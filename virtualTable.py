@@ -95,7 +95,6 @@ class VTable:
 
     def send_update_screen(self):
         for numHand, player in self.game.players.items():
-            player.set_cards(self.game.get_card(), self.game.get_card())
             sock = self.handSocks[str(numHand)]
             pr = GameProtocol()
             msg = pr.create_message1(ProtocolAct.UPDATE_SCREEN, player, self.game, 0, 0)
@@ -114,6 +113,8 @@ class VTable:
         #     sock.send(pickle.dumps(msg))
         # self.send_update_screen()
         self.hand_answers.clear()
+        for numHand, player in self.game.players.items():
+            player.set_cards(self.game.get_card(), self.game.get_card())
         # 3 cards; +1; +1
         for roundNum in range(1, 5):
             print(">>>>>>>>>>>>>>>>>>>>> ", )
@@ -127,8 +128,10 @@ class VTable:
                 self.game.round_bid = 0
                 self.game.first_flop()
             elif roundNum == 3:
+                self.game.round_bid = 0
                 self.game.add_to_flop()
             elif roundNum == 4:
+                self.game.round_bid = 0
                 self.game.add_to_flop()
             else:
                 raise NotImplementedError(f"Range ", roundNum)
@@ -141,7 +144,7 @@ class VTable:
                 self.send_update_screen()
                 player = players[index]
                 index += 1
-                print("player:" + str(player.id))
+
                 print("Money on table :", self.game.jackpot)
                 print("Cards on table :", self.game.flop)
 
@@ -150,6 +153,7 @@ class VTable:
                 self.curr_hand = int(player.id)
                 pr = GameProtocol()
                 msg = pr.create_message1(ProtocolAct.GAME, player, self.game, roundNum, self.game.round_bid)
+                print("player:" + str(player.id) + " send " + msg)
                 sock.send(pickle.dumps(msg))
                 self.hand_answers.clear()
                 # while True:
@@ -189,11 +193,6 @@ class VTable:
 
                 if received_player.responseAct == HandAct.CALL:
                     self.game.jackpot += self.in_game_protocol.your_hand.bid
-                #
-                # if self.in_game_protocol.your_hand.responseAct == HandAct.BET:
-                #     self.game.jackpot += self.in_game_protocol.your_hand.bid
-                #     self.game.round_status = HandAct.BET
-                #     self.game.round_bid = self.game.min_bid
 
                 self.game.add_player(received_player)
 

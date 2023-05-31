@@ -96,7 +96,8 @@ class PokerScreen(tk.Frame):
         player_answer = HandAct(act)
         val = '0'
         if player_answer == HandAct.RAISE:
-            val = simpledialog.askstring("Input Box", "How much money:", parent=self.root)
+            #while val is None or not val.isdigit() or int(val) > 200:
+            val = simpledialog.askstring("Input Box", "How much money (up to 200):")
         self.vhand.send_player_response(player_answer, val)
         self.update_screen(True)
         self.disable_buttons()
@@ -705,7 +706,7 @@ def main():
 
     page = PokerScreen(root)
     page.createMenu()
-    # page.login_screen()
+    #page.login_screen()
 
     page.pack(fill="both", expand=True)
 
@@ -715,7 +716,7 @@ def main():
     page.login(sys.argv[1], sys.argv[2])
     status, message = vhand.receiveMessage()
     if status:
-       page.set_title("Wellcome " + sys.argv[1])
+        page.set_title("Wellcome " + sys.argv[1])
 
     root.mainloop()
 

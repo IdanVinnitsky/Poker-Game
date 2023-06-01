@@ -14,9 +14,10 @@ from player import Player
 from virtualHand import VHand
 from tkinter import messagebox
 from tkinter import simpledialog
-from PIL import Image
 
-from PIL import ImageTk, Image
+
+# from PIL import Image
+# from PIL import ImageTk, Image
 
 def create_card_dict():
     folder_path = 'cards'
@@ -38,18 +39,20 @@ def create_card_dict():
     return dictionary
 
 
-
 class PokerScreen(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
 
+        self.user_message_id = None
         self.jackpot_message_id = None
         self.act_player_texts: dict[str, int] = {}
         self.money_player_texts: dict[str, int] = {}
         self.text_objects: dict[str, int] = {}
+        self.card1_player_objects: dict[str, Card] = {}
+        self.card2_player_objects: dict[str, Card] = {}
         self.topW = None
         self.raise_button = None
-        self.signup_button = None
+        self.append_button = None
         self.root = parent
         self.vhand = VHand("127.0.0.1")
 
@@ -97,7 +100,7 @@ class PokerScreen(tk.Frame):
         player_answer = HandAct(act)
         val = '0'
         if player_answer == HandAct.RAISE:
-            #while val is None or not val.isdigit() or int(val) > 200:
+            # while val is None or not val.isdigit() or int(val) > 200:
             val = simpledialog.askstring("Input Box", "How much money (up to 200):")
         self.vhand.send_player_response(player_answer, val)
         self.update_screen(True)
@@ -136,32 +139,36 @@ class PokerScreen(tk.Frame):
         #     self.text_objects[player.id] = self.canvas.create_text(540, 392, text=str(player.get_respone()),
         #                                                            font=("Arial", 16), fill="red")
 
-    def display_jacpost_money(self, x, y, player: Player):
+    def display_jackpot_money(self, x, y, player: Player):
         if self.money_player_texts.get(player.id) is None:
             self.money_player_texts[player.id] = self.canvas.create_text(x, y, text=str(player.get_money()),
-                                                                   font=("Arial", 16))
+                                                                         font=("Arial", 16))
         else:
             self.canvas.delete(self.money_player_texts[player.id])
             self.money_player_texts[player.id] = self.canvas.create_text(x, y, text=str(player.get_money()),
-                                                                   font=("Arial", 16))
+                                                                         font=("Arial", 16))
 
     def display_player_money(self, x, y, player: Player):
         if self.money_player_texts.get(player.id) is None:
             self.money_player_texts[player.id] = self.canvas.create_text(x, y, text=str(player.get_money()),
-                                                                   font=("Arial", 16))
+                                                                         font=("Arial", 16))
         else:
             self.canvas.delete(self.money_player_texts[player.id])
             self.money_player_texts[player.id] = self.canvas.create_text(x, y, text=str(player.get_money()),
-                                                                   font=("Arial", 16))
+                                                                         font=("Arial", 16))
 
     def display_player_act(self, x, y, player: Player):
+        str_display = ''
+        if player.responseAct == HandAct.RAISE:
+            str_display = str(player.get_respone()) + str(player.bid)
+        else:
+            str_display = str(player.get_respone())
         if self.act_player_texts.get(player.id) is None:
-            self.act_player_texts[player.id] = self.canvas.create_text(x, y, text=str(player.get_respone()),
-                                                                         font=("Arial", 18), fill="red")
+            self.act_player_texts[player.id] = self.canvas.create_text(x, y, text=str_display,                                                                       font=("Arial", 18), fill="red")
         else:
             self.canvas.delete(self.act_player_texts[player.id])
-            self.act_player_texts[player.id] = self.canvas.create_text(x, y, text=str(player.get_respone()),
-                                                                         font=("Arial", 18), fill="red")
+            self.act_player_texts[player.id] = self.canvas.create_text(x, y, text=str_display,
+                                                                       font=("Arial", 18), fill="red")
 
     def show_my_cards(self, card1, card2):
         self.card1_img = tk.PhotoImage(file="cards/" + self.image_dict[card1])
@@ -169,7 +176,6 @@ class PokerScreen(tk.Frame):
 
         self.canvas.create_image(366, 360, image=self.card1_img, anchor="nw")
         self.canvas.create_image(440, 360, image=self.card2_img, anchor="nw")
-
 
     def set_first_flop(self, flop):
         self.card1_flop = tk.PhotoImage(file="cards/" + self.image_dict[flop[0]])
@@ -204,7 +210,6 @@ class PokerScreen(tk.Frame):
 
     def set_card5_flop(self, card5):
         self.card4_flop = tk.PhotoImage(file="cards/" + self.image_dict[card5])
-
 
     def show_first_flop(self):
         x = 250
@@ -289,6 +294,7 @@ class PokerScreen(tk.Frame):
             self.check_button.config(state="disabled")
         if self.raise_button is not None:
             self.raise_button.config(state="disabled")
+
     #
     # def enable_buttons1(self):
     #     self.bet_button.config(state="normal")
@@ -354,13 +360,7 @@ class PokerScreen(tk.Frame):
         y = 450
         self.raise_button.place(x=x, y=y)
 
-    def button_pressed1(self, button_name):
-        if button_name == "Play":
-            messagebox.showinfo("Play", "Let's play the game!")
-        elif button_name == "Rules":
-            messagebox.showinfo("Rules", "Here are the rules of the game:")
-        elif button_name == "Exit":
-            self.master.quit()
+
 
     def disable_buttons1(self):
         self.bet_button.config(state="disabled")
@@ -375,27 +375,30 @@ class PokerScreen(tk.Frame):
     def show_other_players_cards(self, other_players):
         num = len(other_players)
         if num >= 1:
-            self.p1_card1 = tk.PhotoImage(file="cards/" + self.image_dict[other_players[0].cards[0]])
-            self.p1_card2 = tk.PhotoImage(file="cards/" + self.image_dict[other_players[0].cards[1]])
-
-            self.canvas.create_image(62, 306, image=self.p1_card1, anchor="nw")
-            self.canvas.create_image(136, 306, image=self.p1_card2, anchor="nw")
-            # # self.canvas.delete('all')
-            # self.canvas.create_image(62, 306, image=_card1_img, anchor="nw")
-            # self.canvas.create_image(136, 306, image=_card2_img, anchor="nw")
-
-            self.canvas.create_text(240, 362, text=str(other_players[0].get_name()), font=("Arial", 19))
-            self.display_player_act(240, 392, other_players[0])
-            self.display_player_money(240, 422, other_players[0])
-            # self.canvas.create_text(240, 392, text=str(other_players[0].get_money()), font=("Arial", 16))
-            # self.canvas.create_text(240, 422, text=str(other_players[0].get_respone()), font=("Arial", 16), fill="red")40, 422, other_players[0])
-
-            # text.pack()
-            # self.canvas.create_
+            self.card1_player_objects[other_players[0].id] = tk.PhotoImage(file="cards/" +
+                                                                                self.image_dict[other_players[0].cards[0]])
+            self.card2_player_objects[other_players[0].id] = tk.PhotoImage(file="cards/" +
+                                                                             self.image_dict[other_players[0].cards[1]])
+            self.canvas.create_image(62, 306, image=self.card1_player_objects[other_players[0].id], anchor="nw")
+            self.canvas.create_image(136, 306, image=self.card2_player_objects[other_players[0].id], anchor="nw")
+            #
+            # self.canvas.create_text(240, 362, text=str(other_players[0].get_name()), font=("Arial", 19))
+            # self.display_player_act(240, 392, other_players[0])
+            # self.display_player_money(240, 422, other_players[0])
+            #
 
         if num >= 2:
-            self.canvas.create_image(59, 56, image=self.back_image, anchor="nw")
-            self.canvas.create_image(133, 56, image=self.back_image, anchor="nw")
+            self.card1_player_objects[other_players[1].id] = tk.PhotoImage(file="cards/" +
+                                                                             self.image_dict[other_players[1].cards[0]])
+            self.card2_player_objects[other_players[1].id] = tk.PhotoImage(file="cards/" +
+                                                                             self.image_dict[other_players[1].cards[1]])
+            self.canvas.create_image(59, 56, image=self.card1_player_objects[other_players[1].id], anchor="nw")
+            self.canvas.create_image(133, 56, image=self.card2_player_objects[other_players[1].id], anchor="nw")
+            #
+            # self.canvas.create_text(340, 62, text=str(other_players[1].get_name()), font=("Arial", 19))
+            # self.display_player_act(340, 102, other_players[1])
+            # self.display_player_money(340, 142, other_players[1])
+
         if num >= 3:
             self.canvas.create_image(366, 2, image=self.back_image, anchor="nw")
             self.canvas.create_image(440, 2, image=self.back_image, anchor="nw")
@@ -405,8 +408,6 @@ class PokerScreen(tk.Frame):
         if num >= 5:
             self.canvas.create_image(672, 306, image=self.back_image, anchor="nw")
             self.canvas.create_image(746, 306, image=self.back_image, anchor="nw")
-
-
 
     def show_other_players(self, other_players):
         num = len(other_players)
@@ -427,6 +428,10 @@ class PokerScreen(tk.Frame):
         if num >= 2:
             self.canvas.create_image(59, 56, image=self.back_image, anchor="nw")
             self.canvas.create_image(133, 56, image=self.back_image, anchor="nw")
+
+            self.canvas.create_text(59, 180, text=str(other_players[1].get_name()), font=("Arial", 19))
+            self.display_player_act(59, 202, other_players[1])
+            self.display_player_money(59, 220, other_players[1])
         if num >= 3:
             self.canvas.create_image(366, 2, image=self.back_image, anchor="nw")
             self.canvas.create_image(440, 2, image=self.back_image, anchor="nw")
@@ -466,6 +471,7 @@ class PokerScreen(tk.Frame):
     def update_screen_winner(self, winner):
         winner_name = winner.get_name()
         self.canvas.create_text(100, 100, text=winner_name + " is the winner", font=("Arial", 18))
+        self.set_title(winner_name + " is the winner")
 
     def update_screen(self, isOnlyScreen):
         self.clean_flop()
@@ -473,8 +479,9 @@ class PokerScreen(tk.Frame):
         self.display_name_and_money(self.vhand.player)
 
         if isOnlyScreen == False:
-            self.user_message_id = self.canvas.create_text(100, 100, text=self.vhand.player.name + " is your turn", font=("Arial", 18))
-
+            # self.user_message_id = self.canvas.create_text(100, 100, text=self.vhand.player.name + " is your turn",
+            #                                                font=("Arial", 18))
+            self.set_title(self.vhand.player.name + " is your turn")
             if self.vhand.in_game_protocol.round_num == 1:
                 self.set_buttons_FClR()
             else:
@@ -508,10 +515,13 @@ class PokerScreen(tk.Frame):
         self.show_my_cards(self.vhand.player.cards[0], self.vhand.player.cards[1])
         self.display_name_and_money(self.vhand.player)
 
-        self.user_message_id = self.canvas.create_text(100, 100, text=winner.name + " is Winner", font=("Arial", 18))
-
-
-        # self.labels()
+        if self.user_message_id is None:
+            self.user_message_id = self.canvas.create_text(400, 100, text=winner.name + " is Winner",
+                                                           font=("Arial", 18))
+        else:
+            self.canvas.delete(self.user_message_id)
+            self.user_message_id = self.canvas.create_text(400, 100, text=winner.name + " is Winner",
+                                                           font=("Arial", 18))
         self.show_other_players_cards(self.vhand.otherHands)
 
         if self.vhand.flop is not None:
@@ -531,51 +541,53 @@ class PokerScreen(tk.Frame):
                 self.show_card5_flop()
         self.vhand.flop = None
 
-
-    def createMenu(self):
-
-        self.signup_button = tk.Button(self.root, text="Append",
+    def create_menu(self):
+        self.append_button = tk.Button(self.root, text="Append",
                                        command=lambda: self.board_button_clicked("Append"),
                                        width=10, height=2)
-        self.login_button = tk.Button(self.root, text="Login",
-                                      command=lambda: self.board_button_clicked("Login"),
-                                      width=10, height=2)
         self.start_button = tk.Button(self.root, text="Start Game",
-                                      command=lambda: self.board_button_clicked("StartGame"),
+                                      command=lambda: self.board_button_clicked("Start Game"),
                                       width=10, height=2)
         self.exit_button = tk.Button(self.root, text="Exit Game",
                                      command=lambda: self.board_button_clicked("Exit"),
                                      width=10, height=2)
-
-        x = 1
-        y = 1
-        self.login_button.place(x=x, y=y)
-
         x = 150
         y = 1
-        self.start_button.place(x=x, y=y)
+        self.append_button.place(x=x, y=y)
 
         x = 300
         y = 1
-        self.exit_button.place(x=x, y=y)
+        self.start_button.place(x=x, y=y)
 
         x = 500
         y = 1
-        self.signup_button.place(x=x, y=y)
+        self.exit_button.place(x=x, y=y)
+
+    def disable_menu_buttons(self):
+        self.append_button.config(state="disabled")
+        self.start_button.config(state="disabled")
+        self.exit_button.config(state="disabled")
+
+    def enable_menu_buttons(self):
+        self.append_button.config(state="normal")
+        self.start_button.config(state="normal")
+        self.exit_button.config(state="normal")
 
     def board_button_clicked(self, act: str):
+        self.set_title("User trying to " + act)
         if act == 'Append':
-            label = tk.Label(self.root, text="Waiting to start....", font=("Arial", 40))
-            label.place(x=20, y=20)
             self.vhand.append_game()
-        elif act == 'StartGame':
-            self.vhand.startGame()
-        elif act == 'Signup':
-            self.signupScreen()
+            self.card1_player_objects.clear()
+            self.card2_player_objects.clear()
+        elif act == 'Start Game':
+            self.vhand.start_game()
+            self.disable_buttons()
+        elif act == 'Exit':
+            self.close_win()
         else:
             print("Wrong Action:", act)
 
-    def signupScreen(self):
+    def signup_screen(self):
         # Create a Toplevel window
         top = tk.Toplevel(self.root)
         top.geometry("550x250")
@@ -593,7 +605,7 @@ class PokerScreen(tk.Frame):
         entry2.pack()
 
         # Create a Button to print something in the Entry widget
-        tk.Button(top, text="Signup", command=lambda: self.signScreenAct(entry1, entry2)).pack(pady=5, side=TOP)
+        tk.Button(top, text="Signup", command=lambda: self.sign_screen_act(entry1, entry2)).pack(pady=5, side=TOP)
         # Create a Button Widget in the Toplevel Window
         button = tk.Button(top, text="Cancel", command=lambda: self.close_win(top))
         button.pack(pady=5, side=TOP)
@@ -648,10 +660,6 @@ class PokerScreen(tk.Frame):
         top.destroy()
 
     def login_screen_action(self, e1, e2):
-        # self.root.deiconify()
-        # self.topW.withdraw()
-        print("Val", e1.get())
-        print("Val", e2.get())
         self.login(e1.get(), e2.get())
         status, message = self.vhand.receiveMessage()
         if status:
@@ -664,8 +672,8 @@ class PokerScreen(tk.Frame):
 
 
     def signup_screen_action(self, e1, e2):
-        #self.root.deiconify()
-        #self.topW.withdraw()
+        # self.root.deiconify()
+        # self.topW.withdraw()
         print("Val", e1.get())
         print("Val", e2.get())
         self.sigin(e1.get(), e2.get())
@@ -675,7 +683,7 @@ class PokerScreen(tk.Frame):
         else:
             messagebox.showwarning("Warning", message)
 
-    def signScreenAct(self, e1, e2):
+    def sign_screen_act(self, e1, e2):
         print("Val", e1.get())
         print("Val", e2.get())
         self.sigin(e1.get(), e2.get())
@@ -720,13 +728,26 @@ class PokerScreen(tk.Frame):
         self.root.title(param)
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+
+    def _button_pressed1(self, button_name):
+        if button_name == "Play":
+            messagebox.showinfo("Play", "Let's play the game!")
+        elif button_name == "Rules":
+            messagebox.showinfo("Rules", "Here are the rules of the game:")
+        elif button_name == "Exit":
+            self.master.quit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
 def main():
     root = tk.Tk()
     root.geometry("900x500")
 
     page = PokerScreen(root)
-    page.createMenu()
-    #page.login_screen()
+    page.create_menu()
+    # page.login_screen()
 
     page.pack(fill="both", expand=True)
 

@@ -124,7 +124,7 @@ class VHand:
         except Exception as e:
             print(e)
 
-    def startGame(self):
+    def start_game(self):
         pr = GameProtocol()
         msg = pr.create_message2(ProtocolAct.REQUEST_START, GameStatus.REQUEST_START, self.player)
         self.send(msg)
@@ -152,6 +152,7 @@ class VHand:
                             self.otherHands = [x for x in self.in_game_protocol.players if x != self.player]
                             print(f"others : {self.otherHands}")
                             self.flop = self.in_game_protocol.flop
+                            self.screen.disable_menu_buttons()
                             self.screen.update_screen(False)
 
                     if self.in_game_protocol.protocolAct == ProtocolAct.UPDATE_SCREEN:
@@ -165,6 +166,7 @@ class VHand:
                         if self.player.name == winner.name:
                             self.player.money = winner.money
                         self.screen.update_winner_screen(winner)
+                        self.screen.enable_menu_buttons()
 
                 except Exception as e:
                     print(e)

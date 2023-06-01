@@ -1,6 +1,15 @@
+import base64
+import hashlib
+import random
+
 import rsa
 import pickle
 
+from Crypto import Random
+from Crypto.Cipher import AES
+
+BLOCK_SIZE = 16
+pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * chr(BLOCK_SIZE - len(s) % BLOCK_SIZE)
 class EncryptionTool:
 
 
@@ -44,9 +53,28 @@ class EncryptionTool:
         return obj
 
 
+    def generate_aes_key(self):
+        key = ''.join(chr(random.randint(0, 0xFF)) for i in range(16))
+        return key
+        # print ('key', [x for x in key])
 
+
+    def test1(self):
+        key = self.generate_aes_key()
+        private_key = base64.b64decode(hashlib.sha256(key.encode("utf-8")).digest())
+        # init_vector = ''.join([chr(random.randint(0, 0xFF)) for i in range(16)])
+
+        iv = Random.new().read(AES.block_size)
+        aes = AES.new(private_key, AES.MODE_CBC, iv)
+        data = 'hello world 1234' # <- 16 bytes
+        plain_text = pad(data)
+        encd = aes.encrypt(plain_text)
+
+        aes1 = AES.new(key, AES.MODE_CBC, iv)
+        decd = aes1.decrypt(encd)
+        print("decd:", decd)
 
 
 if __name__ == '__main__':
     et = EncryptionTool()
-    et.myfunc()
+    et.test1()

@@ -1,5 +1,6 @@
 import sys
 import tkinter as tk
+from tkinter import Label
 from tkinter.constants import BOTH, TOP, RAISED, E
 from tkinter.simpledialog import askstring
 
@@ -506,7 +507,6 @@ class PokerScreen(tk.Frame):
         self.show_my_cards(self.vhand.player.cards[0], self.vhand.player.cards[1])
         self.display_name_and_money(self.vhand.player)
 
-
         self.user_message_id = self.canvas.create_text(100, 100, text=winner.name + " is Winner", font=("Arial", 18))
 
 
@@ -564,6 +564,8 @@ class PokerScreen(tk.Frame):
 
     def board_button_clicked(self, act: str):
         if act == 'Append':
+            label = tk.Label(self.root, text="Waiting to start....", font=("Arial", 40))
+            label.place(x=20, y=20)
             self.vhand.append_game()
         elif act == 'StartGame':
             self.vhand.startGame()
@@ -596,14 +598,32 @@ class PokerScreen(tk.Frame):
         button.pack(pady=5, side=TOP)
 
     def login_screen(self):
+        passwordName_image = tk.PhotoImage(file="assets\\input_img.png")
         self.root.overrideredirect(1)
         self.root.withdraw()
+
+        #self.photo = tk.PhotoImage(file="assets/pokerscreen.png")
+        label0 = tk.Label(self.topW, text="UserName")
+        label0.pack()
         # Create a Toplevel window
         self.topW = tk.Toplevel(self.root)
-        self.topW.geometry("550x250")
+        self.topW.geometry("900x500")
+
+        self.photo1 = tk.PhotoImage(file="assets/background_log.png")
+        # Set the image as the background
+        background_label = tk.Label(self.topW, image=self.photo1)
+        background_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        title_label = tk.Label(self.topW, text="POKER GAME", font=("Arial", 40, "bold"), bg='green')
+        title_label.pack(pady=10)
+
+        title_label = tk.Label(self.topW, text="By Idan Vinnitsky", font=("Arial", 20, "bold"), bg='green')
+        title_label.pack(pady=10)
 
         # Create an Entry Widget in the Toplevel window
         # tk.Label(top, text="UserName")
+
+        # self.photo = tk.PhotoImage(file="assets/pokerscreen.png")
         label = tk.Label(self.topW, text="UserName")
         label.pack()
         entry1 = tk.Entry(self.topW, width=25)
@@ -643,8 +663,8 @@ class PokerScreen(tk.Frame):
 
 
     def signup_screen_action(self, e1, e2):
-        # self.root.deiconify()
-        # self.topW.withdraw()
+        #self.root.deiconify()
+        #self.topW.withdraw()
         print("Val", e1.get())
         print("Val", e2.get())
         self.sigin(e1.get(), e2.get())
@@ -705,7 +725,7 @@ def main():
 
     page = PokerScreen(root)
     page.createMenu()
-    # page.login_screen()
+    #page.login_screen()
 
     page.pack(fill="both", expand=True)
 

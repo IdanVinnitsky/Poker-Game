@@ -457,7 +457,7 @@ class VHand:
                 print("Receive data:", message)
                 if pr.protocolAct == ProtocolAct.MESSAGE:
                     is_ok = pr.message.startswith("INFO")
-                return (is_ok, pr.message)
+                return is_ok, pr.message
             except Exception as e:
                 print(e)
 

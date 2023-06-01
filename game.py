@@ -31,8 +31,14 @@ def determine_winner(player1_hand, player2_hand):
                 elif player1_cards[i].getValue().value < player2_cards[i].getValue().value:
                     return player2_hand
 
+    # Probability = (Number of favorable outcomes) / (Number of possible outcomes)
+    # Number of favorable outcomes = 1 (since there is only one specific combination of two cards
+    # that both players need to have)
+    # Number of possible outcomes = C(50, 2) = 1,225 (the number of ways to choose 2 cards out
+    # of the remaining 50)
+    # Probability = 1 / 1, 225 ≈ 0.00082 or 0.082 %
     # If no winner is determined, it's a tie
-    #return "It's a tie!"
+    # return "It's a tie!"
 
 
 class Game:
@@ -55,7 +61,6 @@ class Game:
 
     def get_winner(self):
         return self.winner
-
 
     def find_winner(self):
         dict_hands = {}
@@ -83,7 +88,6 @@ class Game:
 
     def set_deck(self, deck: Deck):
         self.deck = deck
-
 
     def get_table(self):
         return self.table
@@ -156,7 +160,6 @@ class Game:
         return card
 
 
-
 if __name__ == '__main__':
     deck = Deck()
     game1 = Game(1, deck)
@@ -174,4 +177,3 @@ if __name__ == '__main__':
     game1.the_winner()
 
     print(f"the winner is {game1.winner()}")
-

@@ -654,7 +654,7 @@ class PokerScreen(tk.Frame):
         tk.Button(self.topW, text="Signup", command=lambda: self.signup_screen_action(entry1, entry2)).pack(pady=5,
                                                                                                             side=TOP)
 
-        show_text_button = tk.Button(self.topW, text="Show Text", command=self.show_text)
+        show_text_button = tk.Button(self.topW, text="Rules", command=self.show_text)
         show_text_button.pack(pady=10)
 
         button = tk.Button(self.topW, text="Cancel", command=lambda: self.close_win(self.root))

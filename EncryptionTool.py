@@ -5,8 +5,7 @@ import random
 import rsa
 import pickle
 
-from Crypto import Random
-from Crypto.Cipher import AES
+from cryptography.hazmat.primitives.ciphers.algorithms import AES
 
 BLOCK_SIZE = 16
 pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * chr(BLOCK_SIZE - len(s) % BLOCK_SIZE)
@@ -64,7 +63,7 @@ class EncryptionTool:
         private_key = base64.b64decode(hashlib.sha256(key.encode("utf-8")).digest())
         # init_vector = ''.join([chr(random.randint(0, 0xFF)) for i in range(16)])
 
-        iv = Random.new().read(AES.block_size)
+        iv = random.Random.new().read(AES.block_size)
         aes = AES.new(private_key, AES.MODE_CBC, iv)
         data = 'hello world 1234' # <- 16 bytes
         plain_text = pad(data)

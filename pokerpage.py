@@ -164,7 +164,7 @@ class PokerScreen(tk.Frame):
         else:
             str_display = str(player.get_respone())
         if self.act_player_texts.get(player.id) is None:
-            self.act_player_texts[player.id] = self.canvas.create_text(x, y, text=str_display,                                                                       font=("Arial", 18), fill="red")
+            self.act_player_texts[player.id] = self.canvas.create_text(x, y, text=str_display, font=("Arial", 18), fill="red")
         else:
             self.canvas.delete(self.act_player_texts[player.id])
             self.act_player_texts[player.id] = self.canvas.create_text(x, y, text=str_display,
@@ -378,7 +378,7 @@ class PokerScreen(tk.Frame):
             self.card1_player_objects[other_players[0].id] = tk.PhotoImage(file="cards/" +
                                                                                 self.image_dict[other_players[0].cards[0]])
             self.card2_player_objects[other_players[0].id] = tk.PhotoImage(file="cards/" +
-                                                                             self.image_dict[other_players[0].cards[1]])
+                                                                                self.image_dict[other_players[0].cards[1]])
             self.canvas.create_image(62, 306, image=self.card1_player_objects[other_players[0].id], anchor="nw")
             self.canvas.create_image(136, 306, image=self.card2_player_objects[other_players[0].id], anchor="nw")
             #
@@ -540,6 +540,8 @@ class PokerScreen(tk.Frame):
                 self.show_card4_flop()
                 self.show_card5_flop()
         self.vhand.flop = None
+        self.card1_player_objects.clear()
+        self.card2_player_objects.clear()
 
     def create_menu(self):
         self.append_button = tk.Button(self.root, text="Append",
@@ -611,7 +613,6 @@ class PokerScreen(tk.Frame):
         button.pack(pady=5, side=TOP)
 
     def login_screen(self):
-        passwordName_image = tk.PhotoImage(file="assets\\input_img.png")
         self.root.overrideredirect(1)
         self.root.withdraw()
 
@@ -653,8 +654,39 @@ class PokerScreen(tk.Frame):
         tk.Button(self.topW, text="Signup", command=lambda: self.signup_screen_action(entry1, entry2)).pack(pady=5,
                                                                                                             side=TOP)
 
+        show_text_button = tk.Button(self.topW, text="Show Text", command=self.show_text)
+        show_text_button.pack(pady=10)
+
         button = tk.Button(self.topW, text="Cancel", command=lambda: self.close_win(self.root))
         button.pack(pady=5, side=TOP)
+
+    def show_text(self):
+        # Read text from a file
+        try:
+            with open("assets/rules.txt", "r") as file:
+                text = file.read()
+        except FileNotFoundError:
+            messagebox.showerror("Error", "Text file not found.")
+            return
+
+        # Create a new Toplevel window to display the text
+        top = tk.Toplevel(self.root)
+        top.title("Rules")
+
+        # Create a Label to display the text
+        label = tk.Label(top, text=text, wraplength=400, justify=tk.LEFT)
+        label.pack(padx=10, pady=10)
+
+        # Bind the closing event to destroy the new window and enable the main window again
+        top.protocol("q", lambda: self.close_new_page(top))
+
+        # Disable the main window while the new window is open
+        self.root.withdraw()
+
+    def close_new_page(self, top):
+        # Destroy the new window and enable the main window again
+        top.destroy()
+        self.root.deiconify()
 
     def close_win(self, top):
         top.destroy()
@@ -747,17 +779,17 @@ def main():
 
     page = PokerScreen(root)
     page.create_menu()
-    # page.login_screen()
+    page.login_screen()
 
     page.pack(fill="both", expand=True)
 
     vhand = page.get_vhand()
     vhand.initUIHand(page)
 
-    page.login(sys.argv[1], sys.argv[2])
-    status, message = vhand.receiveMessage()
-    if status:
-        page.set_title("Wellcome " + sys.argv[1])
+    #page.login(sys.argv[1], sys.argv[2])
+    #status, message = vhand.receiveMessage()
+    #if status:
+    #    page.set_title("Wellcome " + sys.argv[1])
 
     root.mainloop()
 

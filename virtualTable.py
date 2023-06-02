@@ -98,7 +98,7 @@ class VTable:
             pr = GameProtocol()
             msg = pr.create_message1(ProtocolAct.UPDATE_SCREEN, player, self.game, 0, 0)
             sock.sendall(pickle.dumps(msg))
-        time.sleep(1)
+        time.sleep(1.5)
 
     def running_game(self):
         if self.is_game_running:
@@ -211,6 +211,8 @@ class VTable:
         print("End running_game")
 
     def client_append_game(self, handNum, pr: GameProtocol):
+        if self.is_game_running:
+            return
         self.request_players.add(pr.your_hand.name)
         pr.your_hand.id = handNum
         self.game.players[str(handNum)] = pr.your_hand
@@ -249,6 +251,8 @@ class VTable:
             message: str = pr1.create_message3(ProtocolAct.MESSAGE, pr.your_hand, "INFO : Player exists")
             connection.send(pickle.dumps(message))
 
+            if self.is_game_running:
+                return
             pr.your_hand.id = handNum
             self.game.players[str(handNum)] = pr.your_hand
             print(" Set playerId:", playerId)

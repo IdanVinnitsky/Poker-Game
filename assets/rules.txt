@@ -1,0 +1,23 @@
+Texas Hold'em is one of the most popular variants of poker. Here's a brief overview of the rules:
+
+1. Number of Players: Texas Hold'em is usually played with 2 to 10 players.
+
+2. Card Deck: A standard deck of 52 cards is used.
+
+3. Dealer Button: The game starts with a dealer button, which moves clockwise after each hand. The player to the left of the button is the small blind, and the player to the left of the small blind is the big blind.
+
+4. Betting Rounds: There are four betting rounds in Texas Hold'em: pre-flop, flop, turn, and river. Each player is dealt two private cards face down (hole cards) at the beginning.
+
+5. Pre-flop: The first betting round begins with the player to the left of the big blind. Players can choose to fold, call (match the big blind), or raise (increase the bet).
+
+6. Flop: After the pre-flop, three community cards are dealt face up in the middle of the table. This is known as the flop. Another round of betting takes place, starting with the player to the left of the dealer button.
+
+7. Turn: Once the flop betting is complete, a fourth community card is dealt face up. This is called the turn card or fourth street. Another round of betting occurs.
+
+8. River: After the turn betting, the fifth and final community card is dealt face up. This is called the river card or fifth street. The final round of betting takes place.
+
+9. Showdown: If there are two or more players remaining after the river betting, a showdown occurs. Players make the best possible hand using their two hole cards and the five community cards on the table. The player with the highest-ranking hand wins the pot.
+
+10. Hand Rankings: The hand rankings in Texas Hold'em follow the standard poker hierarchy, from high card to royal flush. The best hand possible is a royal flush (A, K, Q, J, 10 of the same suit), while the lowest hand is a high card.
+
+Remember that this is just a brief summary of the rules. It's recommended to study and practice the game further to gain a better understanding of the strategies and nuances involved in Texas Hold'em.

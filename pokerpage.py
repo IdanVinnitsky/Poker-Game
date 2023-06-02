@@ -1,4 +1,5 @@
 import sys
+import time
 import tkinter as tk
 from tkinter import Label
 from tkinter.constants import BOTH, TOP, RAISED, E
@@ -539,6 +540,7 @@ class PokerScreen(tk.Frame):
                 self.show_first_flop()
                 self.show_card4_flop()
                 self.show_card5_flop()
+        time.sleep(3)
         self.vhand.flop = None
         self.card1_player_objects.clear()
         self.card2_player_objects.clear()

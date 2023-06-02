@@ -617,8 +617,7 @@ class PokerScreen(tk.Frame):
         self.root.withdraw()
 
         #self.photo = tk.PhotoImage(file="assets/pokerscreen.png")
-        label0 = tk.Label(self.topW, text="UserName")
-        label0.pack()
+
         # Create a Toplevel window
         self.topW = tk.Toplevel(self.root)
         self.topW.geometry("900x500")
